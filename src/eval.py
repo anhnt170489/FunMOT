@@ -36,7 +36,7 @@ if __name__ == '__main__':
     model = model.to(opt.device)
 
     # validator_det = Validator(opt, model=model, det_only=True)
-    validator_ids = Validator(opt, model=model, det_only=True, pred_only=True)
+    validator_ids = Validator(opt, model=model, det_only=opt.det_only, pred_only=opt.pred_only)
 
     # det_mAP = validator_det.evaluate(
     #     exp_name=opt.exp_id,
