@@ -1,0 +1,22 @@
+{
+  "root": "../data",
+  "train": {
+    "mot17": "./data/mot17.train"
+  },
+  "test_emb": {
+    "mot17": "./data/mot17.train"
+  },
+  "test": {
+    "mot17": "./data/mot17.train"
+  },
+  "val_det": {
+    "val_ds": "cvat47",
+    "val_dir": "cvat47/images",
+    "seqs": "NotMask_Pub_P_33"
+  },
+  "val_ids": {
+    "val_ds": "mot16",
+    "val_dir": "mot16/train",
+    "seqs": "MOT16-02,MOT16-04"
+  }
+}

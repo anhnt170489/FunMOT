@@ -1,0 +1,15 @@
+{
+    "root":"/lustre/scratch/client/vinai/users/dungnt244/smartcity/tracking/dataset",
+    "train":
+    {
+        "mot20":"./data/mot20_head.train"
+    },
+    "test_emb":
+    {
+        "mot20":"./data/mot20_head.train"
+    },
+    "test":
+    {
+        "mot20":"./data/mot20_head.train"
+    }
+}

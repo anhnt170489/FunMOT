@@ -1,0 +1,17 @@
+{
+  "root": "../data/",
+  "train": {
+    "live44": "./data/live_44.train"
+  },
+  "test_emb": {
+    "mot17": "./data/mot17.train"
+  },
+  "test": {
+    "mot17": "./data/mot17.train"
+  },
+  "val_det": {
+    "val_ds": "live_44_val",
+    "val_dir": "live_44_val/images",
+    "seqs": "delivery_44_5021,delivery_44_5023,delivery_44_5018,delivery_44_5025,delivery_44_5016,delivery_44_5027,delivery_44_5020"
+  }
+}

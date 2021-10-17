@@ -1,0 +1,22 @@
+{
+  "root": "../data",
+  "train": {
+    "mot17": "./data/mot17.train"
+  },
+  "test_emb": {
+    "mot17": "./data/mot17.train"
+  },
+  "test": {
+    "mot17": "./data/mot17.train"
+  },
+  "val_det": {
+    "val_ds": "test_FP",
+    "val_dir": "test_FP",
+    "seqs": "tmdm-FP-5f-15-10-2021"
+  },
+  "val_ids": {
+    "val_ds": "ocp_data",
+    "val_dir": "ocp_data",
+    "seqs": "origin_ocp"
+  }
+}
