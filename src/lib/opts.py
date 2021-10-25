@@ -103,11 +103,6 @@ class opts(object):
         self.parser.add_argument('--keep_res', action='store_true',
                                  help='keep the original resolution'
                                       ' during validation.')
-        self.parser.add_argument('--det_only', action='store_true',
-                                 help='Detection only.')
-        self.parser.add_argument('--pred_only', action='store_true',
-                                 help='Prediction only.')
-
         # tracking
         self.parser.add_argument('--test_mot16', default=False, help='test mot16')
         self.parser.add_argument('--val_mot15', default=False, help='val mot15')
@@ -237,9 +232,9 @@ class opts(object):
             if opt.reg_offset:
                 opt.heads.update({'reg': 2})
             opt.nID = dataset.nID
-            # opt.img_size = (1088, 608)
+            opt.img_size = (1088, 608)
             # opt.img_size = (864, 480)
-            opt.img_size = (576, 320)
+            # opt.img_size = (576, 320)
         else:
             assert 0, 'task not defined!'
         print('heads', opt.heads)

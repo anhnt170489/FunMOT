@@ -28,7 +28,7 @@ SKIP_FRAME = 0
 
 
 class Validator:
-    def __init__(self, opt, model=None, det_only=False, pred_only=False):
+    def __init__(self, opt, model=None, det_only=False, pred_only=False, fps=30):
         self.opt = opt
         f = open(opt.data_cfg)
         data_config = json.load(f)
@@ -49,6 +49,7 @@ class Validator:
         self.model = model
         self.det_only = det_only
         self.pred_only = pred_only
+        self.fps = fps
 
     def get_hs_tlwh(self, face_tlwh):
         t, l, w, h = face_tlwh[0], face_tlwh[1], face_tlwh[2], face_tlwh[3]
@@ -134,7 +135,7 @@ class Validator:
                 frame_id = int(len_all / 2)
             else:
                 start_frame = 0
-                end_frame = int(len_all / 2) + 1
+                end_frame = len_all
                 frame_id = 0
             if 'Pub_P_33' in seq or 'Pub_P_25' in seq or 'Pub_P_15' in seq or 'Pub_P_27' in seq or 'Pub_P_38' in seq \
                     or 'Pub_P_16' in seq or 'Pub_P_22' in seq or 'Pub_P_20' in seq or 'Pub_P_24' in seq or 'Pub_P_18' in seq:
@@ -205,6 +206,8 @@ class Validator:
             # gt_tlhws = []
             # gt_hs_tlhws = []
             # gt_ids = []
+
+            # Printing GT
             # if img_id in gt:
             #     frm_gts = gt[img_id]
             #     gt_tlbrs = [
@@ -221,13 +224,14 @@ class Validator:
             #         # gt_ids.append(1)
             #         online_tlwhs.append(hs_tlwh)
             #         online_ids.append(0)
-            #     # gt_ids = [frm_gt[0] for frm_gt in frm_gts]
-            #     _ious = matching.ious(online_head_tlbrs, gt_tlbrs)
-            #     cost_matrix = 1 - _ious
-            #     matches, _, _ = matching.linear_assignment(cost_matrix, thresh=1)
-            #     for match in matches:
-            #         online_idx, gt_idx = match
-            #         online_head_tlwhs[online_idx] = gt_tlhws[gt_idx]
+
+            # # gt_ids = [frm_gt[0] for frm_gt in frm_gts]
+            # _ious = matching.ious(online_head_tlbrs, gt_tlbrs)
+            # cost_matrix = 1 - _ious
+            # matches, _, _ = matching.linear_assignment(cost_matrix, thresh=1)
+            # for match in matches:
+            #     online_idx, gt_idx = match
+            #     online_head_tlwhs[online_idx] = gt_tlhws[gt_idx]
 
             timer.toc()
             # save results
@@ -281,7 +285,7 @@ class Validator:
             # logger.info('start seq: {}'.format(seq))
             dataloader = datasets.LoadImages(osp.join(self.data_root, seq, 'img1'), self.opt.img_size)
             result_filename = os.path.join(result_root, '{}.txt'.format(seq))
-            frame_rate = 5
+            frame_rate = self.fps
             if os.path.exists(os.path.join(self.data_root, seq, 'seqinfo.ini')):
                 meta_info = open(os.path.join(self.data_root, seq, 'seqinfo.ini')).read()
                 frame_rate = int(meta_info[meta_info.find('frameRate') + 10:meta_info.find('\nseqLength')])

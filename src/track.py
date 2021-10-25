@@ -25,7 +25,8 @@ from opts import opts
 
 def write_results(filename, results, data_type):
     if data_type == 'mot':
-        save_format = '{frame},{id},{x1},{y1},{w},{h},1,-1,-1,-1\n'
+        # save_format = '{frame},{id},{x1},{y1},{w},{h},1,-1,-1,-1\n'
+        save_format = '{frame} {id} {x1} {y1} {w} {h} 1 -1 -1 -1\n'
     elif data_type == 'kitti':
         save_format = '{frame} {id} pedestrian 0 0 -10 {x1} {y1} {x2} {y2} -10 -10 -10 -1000 -1000 -1000 -10\n'
     else:
@@ -67,17 +68,18 @@ def write_results_score(filename, results, data_type):
     logger.info('save results to {}'.format(filename))
 
 
-def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_image=True, frame_rate=30, use_cuda=True):
+def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_image=True, save_org=True, frame_rate=30,
+             use_cuda=True):
     if save_dir:
         mkdir_if_missing(save_dir)
     tracker = JDETracker(opt, frame_rate=frame_rate)
     timer = Timer()
     results = []
     frame_id = 0
-    #for path, img, img0 in dataloader:
+    # for path, img, img0 in dataloader:
     for i, (path, img, img0) in enumerate(dataloader):
-        #if i % 8 != 0:
-            #continue
+        # if i % 8 != 0:
+        # continue
         if frame_id % 20 == 0:
             logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
 
@@ -87,22 +89,29 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             blob = torch.from_numpy(img).cuda().unsqueeze(0)
         else:
             blob = torch.from_numpy(img).unsqueeze(0)
-        online_targets = tracker.update(blob, img0)
+        online_targets, _ = tracker.update(blob, img0)
         online_tlwhs = []
         online_ids = []
-        #online_scores = []
+        # online_scores = []
         for t in online_targets:
             tlwh = t.tlwh
             tid = t.track_id
+
+            # Hard code to refine labels
+            if tid not in [1, 2, 3, 4, 9]:
+                continue
+            if tid == 9:
+                tid = 4
+
             vertical = tlwh[2] / tlwh[3] > 1.6
             if tlwh[2] * tlwh[3] > opt.min_box_area and not vertical:
                 online_tlwhs.append(tlwh)
                 online_ids.append(tid)
-                #online_scores.append(t.score)
+                # online_scores.append(t.score)
         timer.toc()
         # save results
         results.append((frame_id + 1, online_tlwhs, online_ids))
-        #results.append((frame_id + 1, online_tlwhs, online_ids, online_scores))
+        # results.append((frame_id + 1, online_tlwhs, online_ids, online_scores))
         if show_image or save_dir is not None:
             online_im = vis.plot_tracking(img0, online_tlwhs, online_ids, frame_id=frame_id,
                                           fps=1. / timer.average_time)
@@ -110,10 +119,15 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             cv2.imshow('online_im', online_im)
         if save_dir is not None:
             cv2.imwrite(os.path.join(save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
+        if save_org:
+            org_save_path = os.path.join(save_dir, 'org')
+            if not os.path.exists(org_save_path):
+                os.mkdir(org_save_path)
+            cv2.imwrite(os.path.join(org_save_path, '{:05d}.jpg'.format(frame_id)), img0)
         frame_id += 1
     # save results
     write_results(result_filename, results, data_type)
-    #write_results_score(result_filename, results, data_type)
+    # write_results_score(result_filename, results, data_type)
     return frame_id, timer.average_time, timer.calls
 
 
@@ -179,7 +193,7 @@ if __name__ == '__main__':
                       PETS09-S2L1
                       TUD-Campus
                       TUD-Stadtmitte'''
-        #seqs_str = '''TUD-Campus'''
+        # seqs_str = '''TUD-Campus'''
         data_root = os.path.join(opt.data_dir, 'MOT15/images/train')
     else:
         seqs_str = '''MOT16-02
@@ -198,8 +212,8 @@ if __name__ == '__main__':
                       MOT16-08
                       MOT16-12
                       MOT16-14'''
-        #seqs_str = '''MOT16-01 MOT16-07 MOT16-12 MOT16-14'''
-        #seqs_str = '''MOT16-06 MOT16-08'''
+        # seqs_str = '''MOT16-01 MOT16-07 MOT16-12 MOT16-14'''
+        # seqs_str = '''MOT16-06 MOT16-08'''
         data_root = os.path.join(opt.data_dir, 'MOT16/test')
     if opt.test_mot15:
         seqs_str = '''ADL-Rundle-1

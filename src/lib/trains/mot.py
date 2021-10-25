@@ -62,21 +62,26 @@ class MotLoss(torch.nn.Module):
 
             if opt.id_weight > 0:
                 id_head = _tranpose_and_gather_feat(output['id'], batch['ind'])
-                id_head = id_head[batch['reg_mask'] > 0].contiguous()
+                # id_head = id_head[batch['reg_mask'] > 0].contiguous()
+                id_head = id_head[batch['ids_mask'] > 0][batch['reg_mask'][batch['ids_mask'] > 0] > 0].contiguous()
                 id_head = self.emb_scale * F.normalize(id_head)
-                id_target = batch['ids'][batch['reg_mask'] > 0]
+                # id_target = batch['ids'][batch['reg_mask'] > 0]
+                id_target = batch['ids'][batch['ids_mask'] > 0][batch['reg_mask'][batch['ids_mask'] > 0] > 0]
 
                 id_output = self.classifier(id_head).contiguous()
 
-                if self.opt.id_loss == 'focal':
-                    id_target_one_hot = id_output.new_zeros((id_head.size(0), self.nID)).scatter_(1,
-                                                                                                  id_target.long().view(
-                                                                                                      -1, 1), 1)
-                    id_loss += sigmoid_focal_loss_jit(id_output, id_target_one_hot,
-                                                      alpha=0.25, gamma=2.0, reduction="sum"
-                                                      ) / id_output.size(0)
+                if id_target.shape[0] == 0:
+                    id_loss = torch.tensor([0.0], device=opt.device)
                 else:
-                    id_loss += self.IDLoss(id_output, id_target)
+                    if self.opt.id_loss == 'focal':
+                        id_target_one_hot = id_output.new_zeros((id_head.size(0), self.nID)).scatter_(1,
+                                                                                                      id_target.long().view(
+                                                                                                          -1, 1), 1)
+                        id_loss += sigmoid_focal_loss_jit(id_output, id_target_one_hot,
+                                                          alpha=0.25, gamma=2.0, reduction="sum"
+                                                          ) / id_output.size(0)
+                    else:
+                        id_loss += self.IDLoss(id_output, id_target)
             else:
                 id_loss = torch.tensor([0.0], device=opt.device)
 
