@@ -30,7 +30,8 @@ bboxes_map = {}
 
 
 def draw_rectangle(img, bbox, color):
-    cv2.rectangle(img, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, THICKNESS)
+    cv2.rectangle(img, (int(bbox[0]), int(bbox[1])),
+                  (int(bbox[2]), int(bbox[3])), color, THICKNESS)
 
 
 for ann in fm_anns:
@@ -69,7 +70,8 @@ for i, frame in enumerate(frames):
         body_bboxes = [np.array(ann['bboxes']) for ann in bboxes]
         _ious = matching.ious(fm_bboxes, body_bboxes)
         cost_matrix = 1 - _ious
-        matches, u_fm, u_bboxes = matching.linear_assignment(cost_matrix, thresh=1)
+        matches, u_fm, u_bboxes = matching.linear_assignment(
+            cost_matrix, thresh=1)
         # print(matches, u_fm, u_bboxes)
         for idx in u_fm:
             bbox = fm_bboxes[idx]
@@ -92,3 +94,6 @@ for i, frame in enumerate(frames):
             for bbox in body_bboxes:
                 draw_rectangle(img, bbox, BODY_COLOR)
         cv2.imwrite(os.path.join(err_dir, frame), img)
+
+    # TODO: Save to file matched bboxes
+    # TODO: Skip frame to 10fps
