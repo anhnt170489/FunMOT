@@ -6,6 +6,7 @@ import _init_paths
 
 import logging
 import os
+import argparse
 import os.path as osp
 from opts import opts
 from tracking_utils.utils import mkdir_if_missing
@@ -14,7 +15,10 @@ import datasets.dataset.jde as datasets
 from track import eval_seq
 
 logger.setLevel(logging.INFO)
-
+parser = argparse.ArgumentParser()
+parser.add_argument('--input', '-i', default='videos/repeat-videos/total-videos/h264vids/IP_Camera1_27.24_27.24_20211024215751_20211024215821_3013972.mp4', type=str)
+parser.add_argument('--output', '-o', default='out/', type=str)
+args = parser.parse_args()
 
 def demo(opt):
     result_root = opt.output_root if opt.output_root != '' else '.'
@@ -40,17 +44,15 @@ def demo(opt):
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    input_video = '--input-video=' + args.input
+    output_root = '--output-root=' + args.output
     args = ['mot',
             # '--arch=resfpndcn_34',
-            # '--arch=resfpndcn_18',
-            '--conf_thres=0.4',
-            '--input-video=../videos/out_part01.mp4',
-            '--output-root=../out/videos/1s_pretrained',
-            # '--val_mot17=True',y
+            # '--val_mot17=True',
             # '--val_mot15=True',
-            # '--load_model=../models/mix_half_live_ft_resfpndcn_18_576_320/model_best_2nd.pth']
-            '--load_model=../models/FM_pretrained/fairmot_dla34.pth']
-    # '--load_model=../models/FM_pretrained/ctdet_coco_dla_2x.pth']
-    # '--load_model=../models/crowdhuman_head_resnet34fpn/model_last.pth']
+            '--conf_thres=0.4',
+            input_video,
+            output_root,
+            '--load_model=models/FM_pretrained/fairmot_dla34.pth']
     opt = opts().init(args)
     demo(opt)

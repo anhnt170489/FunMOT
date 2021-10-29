@@ -79,7 +79,10 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
     results = []
     frame_id = 0
     # for path, img, img0 in dataloader:
+    out_flag = False
     for i, (path, img, img0) in enumerate(dataloader):
+        if img0 is None:
+            break
         # if i % 8 != 0:
         # continue
         if frame_id % 20 == 0:
@@ -102,8 +105,9 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
 
             # Hard code to refine labels
             # TODO: change this hardcode!
-            # if tid not in [1, 2, 3, 4, 9]:
-            #     continue
+            if tid not in [1, 2, 3, 5, 15]:
+                continue
+                # out_flag = True
             # if tid == 9:
             #     tid = 4
 
@@ -113,7 +117,10 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
                 online_ids.append(tid)
                 # online_scores.append(t.score)
         timer.toc()
+        # if out_flag:
+        #     continue
         # save results
+        # TODO: Investigate this!
         results.append((frame_id + 1, online_tlwhs, online_ids))
         # results.append((frame_id + 1, online_tlwhs, online_ids, online_scores))
         if show_image or save_dir is not None:
