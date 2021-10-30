@@ -76,8 +76,6 @@ for i, frame in enumerate(frames):
     # print('fid', i)
     if not frame.endswith('.jpg') and not frame.endswith('.png'):
         continue
-    if i == 50:
-        break
     tlwhs = []
     ids = []
     fid = i + 1
