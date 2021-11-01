@@ -154,9 +154,10 @@ for i, frame in enumerate(frames):
             for fm_idx in u_fm:
                 fm_ann = fm_anns[fm_idx]
                 # Add FM track
-                ids.append(fm_ann['track_id'])
+                track_count += 1
+                ids.append(track_count)
                 tlwhs.append(fm_ann['tlwh'])
-                pseudo_tracks.append({'track_id': fm_ann['track_id'], 'tlbr': fm_ann['tlbr'], 'tlwh': fm_ann['tlwh']})
+                pseudo_tracks.append({'track_id': track_count, 'tlbr': fm_ann['tlbr'], 'tlwh': fm_ann['tlwh']})
 
         merged_img = vis.plot_tracking(img, tlwhs, ids, frame_id=i, fps=20)
         cv2.imwrite(os.path.join(merge_dir, frame), merged_img)
