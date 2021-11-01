@@ -22,6 +22,27 @@ import datasets.dataset.jde as datasets
 from tracking_utils.utils import mkdir_if_missing
 from opts import opts
 
+MAP_STABLE_TRACK = {
+    "IP_Camera1_27.24_27.24_20211021112737_20211021112757_300327.mp4": [6, 8],
+    "IP_Camera1_27.24_27.24_20211023162430_20211023162459_276583.mp4": [145],
+    "IP_Camera1_27.24_27.24_20211023212313_20211023212343_748914.mp4": [115, 116, 117, 118, 122, 123, 124],
+    "IP_Camera1_27.24_27.24_20211024215751_20211024215821_3013972.mp4": [46, 47, 48, 50, 51, 60],
+    "IP_Camera1_172.22.27.18_172.22.27.18_20211023141141_20211023141211_931844.mp4": [102],
+    "IP_Camera1_172.22.27.18_172.22.27.18_20211023152318_20211023152348_986823.mp4": [127, 132, 133],
+    "IP_Camera1_172.22.27.18_172.22.27.18_20211023163515_20211023163545_1042803.mp4": [],
+    "IP_Camera1_172.22.27.18_172.22.27.18_20211023181527_20211023181557_1088681.mp4": [108, 112],
+    "IP_Camera1_172.22.27.18_172.22.27.18_20211023182427_20211023182457_1114318.mp4": [134, 135 ],
+    "IP_Camera1_172.22.27.18_172.22.27.18_20211023184957_20211023185027_1246591.mp4": [24, 25, 29, 32],
+    "IP_Camera1_172.22.27.18_172.22.27.18_20211023210947_20211023211018_1380168.mp4": [21, 22],
+    "IP_Camera1_172.22.27.18_172.22.27.18_20211023215244_20211023215314_1430013.mp4": [13, 14, 16],
+    "IP_Camera1_172.22.27.18_172.22.27.18_20211024161929_20211024161959_3082608.mp4": [36, 37, 40],
+    "IP_Camera1_172.22.27.18_172.22.27.18_20211024201441_20211024201511_3136194.mp4": [1, 5],
+    "IP_Camera1_172.22.27.18_172.22.27.18_20211024204906_20211024204936_3183006.mp4": [167],
+    "IP_Camera2_27.24_27.24_20211023105322_20211023105352_832305.mp4": [67, 74],
+    "IP_Camera6_172.22.27.18_172.22.27.18_20211021131959_20211021132020_882020.mp4": [61, 62, 66],
+    "IP_Camera6_172.22.27.18_172.22.27.18_20211024170408_20211024170434_2942603.mp4": [83, 77, 81, 94],
+    "IP_Camera26_27.30_27.30_20211021102159_20211021102224_661527.mp4": [164, 165]
+}
 
 def write_results(filename, results, data_type):
     if data_type == 'mot':
@@ -70,7 +91,7 @@ def write_results_score(filename, results, data_type):
     logger.info('save results to {}'.format(filename))
 
 
-def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_image=True, save_org=True, frame_rate=30,
+def eval_seq(opt, video_name, dataloader, data_type, result_filename, save_dir=None, show_image=True, save_org=True, frame_rate=30,
              use_cuda=True):
     if save_dir:
         mkdir_if_missing(save_dir)
@@ -105,8 +126,10 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
 
             # Hard code to refine labels
             # TODO: change this hardcode!
-            if tid not in [1, 2, 3, 5, 15]:
+            if tid not in MAP_STABLE_TRACK[video_name]:
                 continue
+            # if tid not in [1, 2, 3, 5, 15]:
+            #     continue
                 # out_flag = True
             # if tid == 9:
             #     tid = 4

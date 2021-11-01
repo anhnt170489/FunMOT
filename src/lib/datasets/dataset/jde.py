@@ -114,8 +114,10 @@ class LoadVideo:  # for inference
         if self.count == len(self):
             raise StopIteration
         # Read image
-        vidcap.set(cv2.CAP_PROP_POS_MSEC, (self.count * 100))
+        self.cap.set(cv2.CAP_PROP_POS_MSEC, (self.count * 100))
         res, img0 = self.cap.read()  # BGR
+        if img0 is None:
+            return self.count, 0, img0
         assert img0 is not None, 'Failed to load frame {:d}'.format(self.count)
         img0 = cv2.resize(img0, (self.w, self.h))
 

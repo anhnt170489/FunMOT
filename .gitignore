@@ -140,3 +140,4 @@ cython_debug/
 videos/
 models/
 DCNv2/
+assets/

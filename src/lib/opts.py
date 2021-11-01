@@ -176,7 +176,7 @@ class opts(object):
         opt.lr_step = [int(i) for i in opt.lr_step.split(',')]
 
         opt.fix_res = not opt.keep_res
-        print('Fix size testing.' if opt.fix_res else 'Keep resolution testing.')
+        # print('Fix size testing.' if opt.fix_res else 'Keep resolution testing.')
         opt.reg_offset = not opt.not_reg_offset
 
         if opt.head_conv == -1:  # init default head_conv
@@ -196,7 +196,7 @@ class opts(object):
             if i < rest_batch_size % (len(opt.gpus) - 1):
                 slave_chunk_size += 1
             opt.chunk_sizes.append(slave_chunk_size)
-        print('training chunk_sizes:', opt.chunk_sizes)
+        # print('training chunk_sizes:', opt.chunk_sizes)
 
         opt.root_dir = os.path.join(os.path.dirname(__file__), '..', '..')
         opt.exp_dir = os.path.join(opt.root_dir, 'exp', opt.task)
