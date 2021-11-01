@@ -120,6 +120,7 @@ for i, frame in enumerate(frames):
                 pseudo_track = pseudo_tracks[pseudo_idx]
                 pseudo_track['tlbr'] = fm_anns[fm_idx]['tlbr']
                 pseudo_track['tlwh'] = fm_anns[fm_idx]['tlwh']
+                # Add to output
                 ids.append(pseudo_track['track_id'])
                 tlwhs.append(pseudo_track['tlwh'])
 
@@ -136,6 +137,7 @@ for i, frame in enumerate(frames):
                         body_bbox = body_bboxes[u_body[body_idx]]
                         pseudo_track['tlbr'] = body_bbox['tlbr']
                         pseudo_track['tlwh'] = body_bbox['tlwh']
+                        # Add to output
                         ids.append(pseudo_track['track_id'])
                         tlwhs.append(pseudo_track['tlwh'])
                     new_body_bboxes = [u_body[idx] for idx in new_body_bboxes]
@@ -165,10 +167,36 @@ for i, frame in enumerate(frames):
             # fm_bboxes = [fm_ann['bboxes'] for fm_ann in fm_anns]
             # for bbox in fm_bboxes:
             #     draw_rectangle(img, bbox, FM_COLOR)
-            for fm_ann in fm_anns:
-                # Add FM track
-                ids.append(fm_ann['track_id'])
-                tlwhs.append(fm_ann['tlwh'])
+            if len(pseudo_tracks) > 0:
+                # Fuse FM tracks & pseudo tracks
+                fm_tlbrs = [np.array(fm_ann['tlbr']) for fm_ann in fm_anns]
+                pseudo_track_tlbrs = [np.array(pseudo_track['tlbr']) for pseudo_track in pseudo_tracks]
+                cost_matrix = matching.iou_distance(pseudo_track_tlbrs, fm_tlbrs)
+                matches, u_pseudo, u_fm = matching.linear_assignment(cost_matrix, thresh=IOU_THRES)
+                for pseudo_idx, fm_idx in matches:
+                    # Update Pseudo tracks
+                    pseudo_track = pseudo_tracks[pseudo_idx]
+                    pseudo_track['tlbr'] = fm_anns[fm_idx]['tlbr']
+                    pseudo_track['tlwh'] = fm_anns[fm_idx]['tlwh']
+                    # Add to output
+                    ids.append(pseudo_track['track_id'])
+                    tlwhs.append(pseudo_track['tlwh'])
+                # Add unmatched FM tracks
+                for u_fm_idx in u_fm:
+                    u_fm_ann = fm_anns[u_fm_idx]
+                    # Add to output
+                    ids.append(fm_ann['track_id'])
+                    tlwhs.append(fm_ann['tlwh'])
+                    # Add to Pseudo Tracks
+                    pseudo_tracks.append(
+                        {'track_id': fm_ann['track_id'], 'tlbr': fm_ann['tlbr'], 'tlwh': fm_ann['tlwh']})
+            else:
+                # Add FM tracks
+                for fm_ann in fm_anns:
+                    ids.append(fm_ann['track_id'])
+                    tlwhs.append(fm_ann['tlwh'])
+                    pseudo_tracks.append(
+                        {'track_id': fm_ann['track_id'], 'tlbr': fm_ann['tlbr'], 'tlwh': fm_ann['tlwh']})
         if fid in body_bboxes_map:
             body_bboxes = body_bboxes_map[fid]
             # body_bboxes = [ann['bboxes'] for ann in bboxes]
@@ -192,6 +220,7 @@ for i, frame in enumerate(frames):
                     body_bbox = body_bboxes[body_idx]
                     pseudo_track['tlbr'] = body_bbox['tlbr']
                     pseudo_track['tlwh'] = body_bbox['tlwh']
+                    # Add to output
                     ids.append(pseudo_track['track_id'])
                     tlwhs.append(pseudo_track['tlwh'])
             else:
