@@ -1,0 +1,27 @@
+{
+  "root": "/lustre/scratch/client/vinai/users/anhnt497/FM/data/MIX",
+  "train": {
+    "mot17": "./data/mot17.train",
+    "cuhksysu": "./data/cuhksysu.half",
+    "prw": "./data/prw.train",
+    "livetrack": "./data/LiveTrack.train"
+  },
+  "test_emb": {
+    "mot15": "./data/mot15.val"
+  },
+  "test": {
+    "mot15": "./data/mot15.val"
+  },
+  "val_det": {
+    "root": "/lustre/scratch/client/vinai/users/anhnt497/FM/data/livedata",
+    "val_ds": "live_val",
+    "val_dir": "live_val/images",
+    "seqs": "delivery_44_5033,delivery_44_5040,delivery_44_5029,delivery_44_5041,delivery_44_5037,delivery_44_5042,delivery_44_5035,delivery_44_5028,delivery_44_5034,delivery_44_5036,delivery_44_5039,delivery_44_5038,delivery_44_5030,delivery_44_5032,delivery_44_5031"
+  },
+  "val_ids": {
+    "root": "/lustre/scratch/client/vinai/users/anhnt497/FM/data",
+    "val_ds": "mot16",
+    "val_dir": "mot16/MOT16/train",
+    "seqs": "MOT16-02,MOT16-04,MOT16-05,MOT16-09,MOT16-10,MOT16-11,MOT16-13"
+  }
+}

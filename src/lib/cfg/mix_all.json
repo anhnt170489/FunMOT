@@ -1,0 +1,29 @@
+{
+  "root": "/lustre/scratch/client/vinai/users/anhnt497/FM/data/MIX",
+  "train": {
+    "mot17": "./data/mot17.train",
+    "caltech": "./data/caltech.all",
+    "citypersons": "./data/citypersons.train",
+    "cuhksysu": "./data/cuhksysu.train",
+    "prw": "./data/prw.train",
+    "eth": "./data/eth.train"
+  },
+  "test_emb": {
+    "mot15": "./data/mot15.val"
+  },
+  "test": {
+    "mot15": "./data/mot15.val"
+  },
+  "val_det": {
+    "root": "/lustre/scratch/client/vinai/users/anhnt497/FM/data",
+    "val_ds": "cvat47",
+    "val_dir": "cvat47_json/data",
+    "seqs": "20745_20210920-smc-tracking-qa_NotMask_Pub_P_37,20715_20210920-smc-tracking-qa_NotMask_Pub_P_14,20724_20210920-smc-tracking-qa_NotMask_Pub_P_20,20730_20210920-smc-tracking-qa_NotMask_Pub_P_24,20722_20210920-smc-tracking-qa_NotMask_Pub_P_19,20721_20210920-smc-tracking-qa_NotMask_Pub_P_18,20704_20210920-smc-tracking-qa_NotMask_Pub_P_5,20737_20210920-smc-tracking-qa_NotMask_Pub_P_29,20701_20210920-smc-tracking-qa_NotMask_Pub_P_2,20703_20210920-smc-tracking-qa_NotMask_Pub_P_4,20713_20210920-smc-tracking-qa_NotMask_Pub_P_13,20740_20210920-smc-tracking-qa_NotMask_Pub_P_32"
+  },
+  "val_ids": {
+    "root": "/lustre/scratch/client/vinai/users/anhnt497/FM/data",
+    "val_ds": "mot16",
+    "val_dir": "mot16/MOT16/train",
+    "seqs": "MOT16-02,MOT16-04,MOT16-05,MOT16-09,MOT16-10,MOT16-11,MOT16-13"
+  }
+}
