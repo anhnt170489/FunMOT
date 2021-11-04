@@ -135,7 +135,7 @@ class Validator:
                 frame_id = int(len_all / 2)
             else:
                 start_frame = 0
-                end_frame = len_all
+                end_frame = int(len_all / 2) + 1
                 frame_id = 0
             if 'Pub_P_33' in seq or 'Pub_P_25' in seq or 'Pub_P_15' in seq or 'Pub_P_27' in seq or 'Pub_P_38' in seq \
                     or 'Pub_P_16' in seq or 'Pub_P_22' in seq or 'Pub_P_20' in seq or 'Pub_P_24' in seq or 'Pub_P_18' in seq:
@@ -331,9 +331,9 @@ class Validator:
                         evaluation.evaluate()
                         evaluation.accumulate()
                         mAPs.append(evaluation.summarize())
-                    # print(str(i + 1) + "/" + str(len(self.seqs)) + ":", str(sum(mAPs) / len(mAPs)))
-                    Bar.suffix = 'val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
-                        i + 1, len(self.seqs), mAP=sum(mAPs) / len(mAPs))
+                        # print(str(i + 1) + "/" + str(len(self.seqs)) + ":", str(sum(mAPs) / len(mAPs)))
+                        Bar.suffix = 'val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
+                            i + 1, len(self.seqs), mAP=sum(mAPs) / len(mAPs))
                 else:
                     evaluator = Evaluator(self.data_root, seq, data_type)
                     accs.append(evaluator.eval_file(result_filename))
@@ -377,4 +377,7 @@ class Validator:
                 Evaluator.save_summary(summary, os.path.join(result_root, 'summary_{}.xlsx'.format(exp_name)), epoch)
                 return mota
             else:
-                return sum(mAPs) / len(mAPs)
+                if len(mAPs) != 0:
+                    return sum(mAPs) / len(mAPs)
+                else:
+                    return 0

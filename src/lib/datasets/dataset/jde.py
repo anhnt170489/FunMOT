@@ -140,8 +140,10 @@ class LoadImagesAndLabels:  # for training
             self.img_files = [x.replace('\n', '') for x in self.img_files]
             self.img_files = list(filter(lambda x: len(x) > 0, self.img_files))
 
-        self.label_files = [x.replace('images', 'labels_with_ids').replace('.png', '.txt').replace('.jpg', '.txt')
-                            for x in self.img_files]
+        self.label_files = [
+            x.replace('images', 'labels_with_ids').replace('.png', '.txt').replace('.jpg', '.txt').replace('.jpeg',
+                                                                                                           '.txt')
+            for x in self.img_files]
 
         self.nF = len(self.img_files)  # number of image files
         self.width = img_size[0]

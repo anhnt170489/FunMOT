@@ -232,9 +232,9 @@ class opts(object):
             if opt.reg_offset:
                 opt.heads.update({'reg': 2})
             opt.nID = dataset.nID
-            opt.img_size = (1088, 608)
+            # opt.img_size = (1088, 608)
             # opt.img_size = (864, 480)
-            # opt.img_size = (576, 320)
+            opt.img_size = (576, 320)
         else:
             assert 0, 'task not defined!'
         print('heads', opt.heads)

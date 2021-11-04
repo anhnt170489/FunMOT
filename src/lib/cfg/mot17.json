@@ -1,5 +1,5 @@
 {
-  "root": "../data",
+  "root": "/lustre/scratch/client/vinai/users/anhnt497/FM/data/MIX",
   "train": {
     "mot17": "./data/mot17.train"
   },
@@ -11,12 +11,7 @@
   },
   "val_det": {
     "val_ds": "cvat47",
-    "val_dir": "cvat47/images",
-    "seqs": "NotMask_Pub_P_33"
-  },
-  "val_ids": {
-    "val_ds": "mot16",
-    "val_dir": "mot16/train",
-    "seqs": "MOT16-02,MOT16-04"
+    "val_dir": "cvat47_json/data",
+    "seqs": "20699_20210920-smc-tracking-qa_NotMask_Pub_P_1,20741_20210920-smc-tracking-qa_NotMask_Pub_P_33,20732_20210920-smc-tracking-qa_NotMask_Pub_P_25,20710_20210920-smc-tracking-qa_NotMask_Pub_P_9,20712_20210920-smc-tracking-qa_NotMask_Pub_P_12,20738_20210920-smc-tracking-qa_NotMask_Pub_P_30,20719_20210920-smc-tracking-qa_NotMask_Pub_P_17,20706_20210920-smc-tracking-qa_NotMask_Pub_P_6,20709_20210920-smc-tracking-qa_NotMask_Pub_P_8,20702_20210920-smc-tracking-qa_NotMask_Pub_P_3,20744_20210920-smc-tracking-qa_NotMask_Pub_P_36,20716_20210920-smc-tracking-qa_NotMask_Pub_P_15,20708_20210920-smc-tracking-qa_NotMask_Pub_P_7,20711_20210920-smc-tracking-qa_NotMask_Pub_P_11,20734_20210920-smc-tracking-qa_NotMask_Pub_P_27,20739_20210920-smc-tracking-qa_NotMask_Pub_P_31,20742_20210920-smc-tracking-qa_NotMask_Pub_P_34,20700_20210920-smc-tracking-qa_NotMask_Pub_P_10,20729_20210920-smc-tracking-qa_NotMask_Pub_P_23,20743_20210920-smc-tracking-qa_NotMask_Pub_P_35,20726_20210920-smc-tracking-qa_NotMask_Pub_P_21,20735_20210920-smc-tracking-qa_NotMask_Pub_P_28,20746_20210920-smc-tracking-qa_NotMask_Pub_P_38,20733_20210920-smc-tracking-qa_NotMask_Pub_P_26,20717_20210920-smc-tracking-qa_NotMask_Pub_P_16,20727_20210920-smc-tracking-qa_NotMask_Pub_P_22,20745_20210920-smc-tracking-qa_NotMask_Pub_P_37,20715_20210920-smc-tracking-qa_NotMask_Pub_P_14,20724_20210920-smc-tracking-qa_NotMask_Pub_P_20,20730_20210920-smc-tracking-qa_NotMask_Pub_P_24,20722_20210920-smc-tracking-qa_NotMask_Pub_P_19,20721_20210920-smc-tracking-qa_NotMask_Pub_P_18,20704_20210920-smc-tracking-qa_NotMask_Pub_P_5,20737_20210920-smc-tracking-qa_NotMask_Pub_P_29,20701_20210920-smc-tracking-qa_NotMask_Pub_P_2,20703_20210920-smc-tracking-qa_NotMask_Pub_P_4,20713_20210920-smc-tracking-qa_NotMask_Pub_P_13,20740_20210920-smc-tracking-qa_NotMask_Pub_P_32"
   }
 }

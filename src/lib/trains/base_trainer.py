@@ -68,31 +68,33 @@ class BaseTrainer(object):
             for k in batch:
                 if k != 'meta':
                     batch[k] = batch[k].to(device=opt.device, non_blocking=True)
+            try:
+                output, loss, loss_stats = model_with_loss(batch)
+                loss = loss.mean()
+                if phase == 'train':
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    self.optimizer.step()
+                batch_time.update(time.time() - end)
+                end = time.time()
 
-            output, loss, loss_stats = model_with_loss(batch)
-            loss = loss.mean()
-            if phase == 'train':
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-            batch_time.update(time.time() - end)
-            end = time.time()
-
-            Bar.suffix = '{phase}: [{0}][{1}/{2}]|Tot: {total:} |ETA: {eta:} '.format(
-                epoch, iter_id, num_iters, phase=phase,
-                total=bar.elapsed_td, eta=bar.eta_td)
-            for l in avg_loss_stats:
-                avg_loss_stats[l].update(
-                    loss_stats[l].mean().item(), batch['input'].size(0))
-                Bar.suffix = Bar.suffix + '|{} {:.4f} '.format(l, avg_loss_stats[l].avg)
-            if not opt.hide_data_time:
-                Bar.suffix = Bar.suffix + '|Data {dt.val:.3f}s({dt.avg:.3f}s) ' \
-                                          '|Net {bt.avg:.3f}s'.format(dt=data_time, bt=batch_time)
-            if opt.print_iter > 0:
-                if iter_id % opt.print_iter == 0:
-                    print('{}/{}| {}'.format(opt.task, opt.exp_id, Bar.suffix))
-            else:
-                bar.next()
+                Bar.suffix = '{phase}: [{0}][{1}/{2}]|Tot: {total:} |ETA: {eta:} '.format(
+                    epoch, iter_id, num_iters, phase=phase,
+                    total=bar.elapsed_td, eta=bar.eta_td)
+                for l in avg_loss_stats:
+                    avg_loss_stats[l].update(
+                        loss_stats[l].mean().item(), batch['input'].size(0))
+                    Bar.suffix = Bar.suffix + '|{} {:.4f} '.format(l, avg_loss_stats[l].avg)
+                if not opt.hide_data_time:
+                    Bar.suffix = Bar.suffix + '|Data {dt.val:.3f}s({dt.avg:.3f}s) ' \
+                                              '|Net {bt.avg:.3f}s'.format(dt=data_time, bt=batch_time)
+                if opt.print_iter > 0:
+                    if iter_id % opt.print_iter == 0:
+                        print('{}/{}| {}'.format(opt.task, opt.exp_id, Bar.suffix))
+                else:
+                    bar.next()
+            except:
+                print("Error batch", batch)
 
             if opt.test:
                 self.save_result(output, batch, results)

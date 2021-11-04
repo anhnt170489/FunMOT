@@ -134,8 +134,8 @@ class COCOeval2(COCOeval):
         pd_stat = pd.DataFrame(self.stats)
         pd_stat.columns = ["classes", "images", "mAP@.5:@.95", "mAP@.5", "mAP@.5(small)", "mAP@.5(medium)",
                            "mAP@.5(large)", "mAR@.5:.95"]
-        print(self.stats)
+        # print(self.stats)
         # print(pd_stat["classes"])
         pd_stat["classes"] = pd_stat["classes"].apply(lambda x: (self._load_classes()[int(x)] if x != 0.5 else "All"))
-        # print(pd_stat)
+        print(pd_stat)
         return pd_stat['mAP@.5'].values[-1]

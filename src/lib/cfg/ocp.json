@@ -1,5 +1,5 @@
 {
-  "root": "../data",
+  "root": "/lustre/scratch/client/vinai/users/anhnt497/FM/data/livedata/raw-data_OCP-TMDM_12-10-2021",
   "train": {
     "mot17": "./data/mot17.train"
   },
@@ -10,13 +10,13 @@
     "mot17": "./data/mot17.train"
   },
   "val_det": {
-    "val_ds": "test_FP",
-    "val_dir": "test_FP",
-    "seqs": "tmdm-FP-5f-15-10-2021"
+    "val_ds": "20211011-10-23_OCP_part1",
+    "val_dir": "20211011-10-23_OCP_part1",
+    "seqs": "5f896f2b32623f96b3c083f0,605e9d7a51d8a7010f0ed0a2,5f882ed841a8bf01a9faf559,60ded6295960db05c9c4e221,5f892b07bdefb900d619c0aa,5f925e48810c4d5bc4396ce0,5f896f2b32623f96b3c083f4,5f892aa595c8d600cb7ac3f6,5f882ed841a8bf01a9faf55a,5f892ae9bdefb900d619c0a7,5f896f2932623f96b3c08241,5f882ed841a8bf01a9faf558,5f892ae9bdefb900d619c0a8"
   },
   "val_ids": {
-    "val_ds": "ocp_data",
-    "val_dir": "ocp_data",
-    "seqs": "origin_ocp"
+    "val_ds": "20211011-10-23_OCP_part1",
+    "val_dir": "20211011-10-23_OCP_part1",
+    "seqs": "5f896f2b32623f96b3c083f0,605e9d7a51d8a7010f0ed0a2,5f882ed841a8bf01a9faf559,60ded6295960db05c9c4e221,5f892b07bdefb900d619c0aa,5f925e48810c4d5bc4396ce0,5f896f2b32623f96b3c083f4,5f892aa595c8d600cb7ac3f6,5f882ed841a8bf01a9faf55a,5f892ae9bdefb900d619c0a7,5f896f2932623f96b3c08241,5f882ed841a8bf01a9faf558,5f892ae9bdefb900d619c0a8"
   }
 }

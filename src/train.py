@@ -18,6 +18,15 @@ from datasets.dataset_factory import get_dataset
 from trains.train_factory import train_factory
 from trains.validator import Validator
 from optimizer.radam import RAdam
+import numpy as np
+
+import numpy as np
+
+np.seterr(all='ignore')
+
+import warnings
+
+warnings.filterwarnings('ignore')
 
 
 def main(opt):
@@ -44,9 +53,11 @@ def main(opt):
 
     print('Creating model...')
     model = create_model(opt.arch, opt.heads, opt.head_conv)
+
     if opt.optimizer == 'ADAM':
         optimizer = torch.optim.Adam(model.parameters(), opt.lr)
     elif opt.optimizer == 'RADAM':
+        print("Using RADAM")
         optimizer = RAdam(model.parameters(), opt.lr)
     start_epoch = 0
 
@@ -56,7 +67,8 @@ def main(opt):
         dataset,
         batch_size=opt.batch_size,
         shuffle=True,
-        num_workers=opt.num_workers,
+        # num_workers=opt.num_workers,
+        num_workers=0,
         pin_memory=True,
         drop_last=True
     )
@@ -72,7 +84,8 @@ def main(opt):
 
     if opt.load_model != '':
         model, optimizer, start_epoch = load_model(
-            model, opt.load_model, trainer.optimizer, opt.resume, opt.lr, opt.lr_step)
+            model, opt.load_model, trainer.optimizer, opt.resume, opt.lr, opt.lr_step, opt.optimizer)
+
     best_score = -1
 
     for epoch in range(start_epoch + 1, opt.num_epochs + 1):
@@ -159,4 +172,4 @@ def main(opt):
 if __name__ == '__main__':
     # torch.cuda.set_device(0)
     opt = opts().parse()
-    main()
+    main(opt)
