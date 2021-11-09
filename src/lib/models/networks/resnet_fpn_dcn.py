@@ -15,6 +15,7 @@ import logging
 
 import torch
 import torch.nn as nn
+
 # from dcn_v2 import DCN
 import torch.utils.model_zoo as model_zoo
 
@@ -22,18 +23,19 @@ BN_MOMENTUM = 0.1
 logger = logging.getLogger(__name__)
 
 model_urls = {
-    'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
-    'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
-    'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
-    'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
-    'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
+    "resnet18": "https://download.pytorch.org/models/resnet18-5c106cde.pth",
+    "resnet34": "https://download.pytorch.org/models/resnet34-333f7ec4.pth",
+    "resnet50": "https://download.pytorch.org/models/resnet50-19c8e357.pth",
+    "resnet101": "https://download.pytorch.org/models/resnet101-5d3b4d8f.pth",
+    "resnet152": "https://download.pytorch.org/models/resnet152-b121ed2d.pth",
 }
 
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=1, bias=False)
+    return nn.Conv2d(
+        in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False
+    )
 
 
 class BasicBlock(nn.Module):
@@ -75,13 +77,14 @@ class Bottleneck(nn.Module):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes, momentum=BN_MOMENTUM)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
-                               padding=1, bias=False)
+        self.conv2 = nn.Conv2d(
+            planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
+        )
         self.bn2 = nn.BatchNorm2d(planes, momentum=BN_MOMENTUM)
-        self.conv3 = nn.Conv2d(planes, planes * self.expansion, kernel_size=1,
-                               bias=False)
-        self.bn3 = nn.BatchNorm2d(planes * self.expansion,
-                                  momentum=BN_MOMENTUM)
+        self.conv3 = nn.Conv2d(
+            planes, planes * self.expansion, kernel_size=1, bias=False
+        )
+        self.bn3 = nn.BatchNorm2d(planes * self.expansion, momentum=BN_MOMENTUM)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
@@ -112,11 +115,10 @@ class Bottleneck(nn.Module):
 def fill_up_weights(up):
     w = up.weight.data
     f = math.ceil(w.size(2) / 2)
-    c = (2 * f - 1 - f % 2) / (2. * f)
+    c = (2 * f - 1 - f % 2) / (2.0 * f)
     for i in range(w.size(2)):
         for j in range(w.size(3)):
-            w[0, 0, i, j] = \
-                (1 - math.fabs(i / f - c)) * (1 - math.fabs(j / f - c))
+            w[0, 0, i, j] = (1 - math.fabs(i / f - c)) * (1 - math.fabs(j / f - c))
     for c in range(1, w.size(0)):
         w[c, 0, :, :] = w[0, 0, :, :]
 
@@ -132,15 +134,13 @@ def fill_fc_weights(layers):
 
 
 class PoseResNet(nn.Module):
-
     def __init__(self, block, layers, heads, head_conv):
         self.inplanes = 64
         self.heads = heads
         self.deconv_with_bias = False
 
         super(PoseResNet, self).__init__()
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
-                               bias=False)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64, momentum=BN_MOMENTUM)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -166,21 +166,26 @@ class PoseResNet(nn.Module):
             classes = self.heads[head]
             if head_conv > 0:
                 fc = nn.Sequential(
-                    nn.Conv2d(64, head_conv,
-                              kernel_size=3, padding=1, bias=True),
+                    nn.Conv2d(64, head_conv, kernel_size=3, padding=1, bias=True),
                     nn.ReLU(inplace=True),
-                    nn.Conv2d(head_conv, classes,
-                              kernel_size=1, stride=1,
-                              padding=0, bias=True))
-                if 'hm' in head:
+                    nn.Conv2d(
+                        head_conv,
+                        classes,
+                        kernel_size=1,
+                        stride=1,
+                        padding=0,
+                        bias=True,
+                    ),
+                )
+                if "hm" in head:
                     fc[-1].bias.data.fill_(-2.19)
                 else:
                     fill_fc_weights(fc)
             else:
-                fc = nn.Conv2d(64, classes,
-                               kernel_size=1, stride=1,
-                               padding=0, bias=True)
-                if 'hm' in head:
+                fc = nn.Conv2d(
+                    64, classes, kernel_size=1, stride=1, padding=0, bias=True
+                )
+                if "hm" in head:
                     fc.bias.data.fill_(-2.19)
                 else:
                     fill_fc_weights(fc)
@@ -190,8 +195,13 @@ class PoseResNet(nn.Module):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, planes * block.expansion,
-                          kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(
+                    self.inplanes,
+                    planes * block.expansion,
+                    kernel_size=1,
+                    stride=stride,
+                    bias=False,
+                ),
                 nn.BatchNorm2d(planes * block.expansion, momentum=BN_MOMENTUM),
             )
 
@@ -220,16 +230,21 @@ class PoseResNet(nn.Module):
 
         layers = []
 
-        kernel, padding, output_padding = \
-            self._get_deconv_cfg(num_kernels)
+        kernel, padding, output_padding = self._get_deconv_cfg(num_kernels)
 
         planes = num_filters
         # fc = DCN(self.inplanes, planes,
         #         kernel_size=(3,3), stride=1,
         #         padding=1, dilation=1, deformable_groups=1)
-        fc = nn.Conv2d(self.inplanes, planes,
-                       kernel_size=3, stride=1,
-                       padding=1, dilation=1, bias=False)
+        fc = nn.Conv2d(
+            self.inplanes,
+            planes,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            dilation=1,
+            bias=False,
+        )
         fill_fc_weights(fc)
         up = nn.ConvTranspose2d(
             in_channels=planes,
@@ -238,7 +253,8 @@ class PoseResNet(nn.Module):
             stride=2,
             padding=padding,
             output_padding=output_padding,
-            bias=self.deconv_with_bias)
+            bias=self.deconv_with_bias,
+        )
         fill_up_weights(up)
 
         layers.append(fc)
@@ -270,25 +286,30 @@ class PoseResNet(nn.Module):
         ret = {}
         for head in self.heads:
             ret[head] = self.__getattr__(head)(p1)
-        return [ret]
+        hm = ret["hm"]
+        wh = ret["wh"]
+        reg = ret["reg"]
+        id_feature = ret["id"]
+        return [hm, wh, reg, id_feature]
 
     def init_weights(self, num_layers):
         if 1:
-            url = model_urls['resnet{}'.format(num_layers)]
+            url = model_urls["resnet{}".format(num_layers)]
             pretrained_state_dict = model_zoo.load_url(url)
-            print('=> loading pretrained model {}'.format(url))
+            print("=> loading pretrained model {}".format(url))
             self.load_state_dict(pretrained_state_dict, strict=False)
-            print('=> init deconv weights from normal distribution')
+            print("=> init deconv weights from normal distribution")
 
 
 class DeformConv(nn.Module):
     def __init__(self, chi, cho):
         super(DeformConv, self).__init__()
         self.actf = nn.Sequential(
-            nn.BatchNorm2d(cho, momentum=BN_MOMENTUM),
-            nn.ReLU(inplace=True)
+            nn.BatchNorm2d(cho, momentum=BN_MOMENTUM), nn.ReLU(inplace=True)
         )
-        self.conv = nn.Conv2d(chi, cho, kernel_size=(3, 3), stride=1, padding=1, dilation=1)
+        self.conv = nn.Conv2d(
+            chi, cho, kernel_size=(3, 3), stride=1, padding=1, dilation=1
+        )
         # self.conv = DCN(chi, cho, kernel_size=(3, 3), stride=1, padding=1, dilation=1, deformable_groups=1)
         for name, m in self.actf.named_modules():
             if isinstance(m, nn.BatchNorm2d):
@@ -301,11 +322,13 @@ class DeformConv(nn.Module):
         return x
 
 
-resnet_spec = {18: (BasicBlock, [2, 2, 2, 2]),
-               34: (BasicBlock, [3, 4, 6, 3]),
-               50: (Bottleneck, [3, 4, 6, 3]),
-               101: (Bottleneck, [3, 4, 23, 3]),
-               152: (Bottleneck, [3, 8, 36, 3])}
+resnet_spec = {
+    18: (BasicBlock, [2, 2, 2, 2]),
+    34: (BasicBlock, [3, 4, 6, 3]),
+    50: (Bottleneck, [3, 4, 6, 3]),
+    101: (Bottleneck, [3, 4, 23, 3]),
+    152: (Bottleneck, [3, 8, 36, 3]),
+}
 
 
 def get_pose_net(num_layers, heads, head_conv=256):

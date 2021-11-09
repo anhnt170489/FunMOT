@@ -138,3 +138,9 @@ dmypy.json
 cython_debug/
 models/
 videos/
+
+*.pyc
+**/quant_out/*
+**/weights/*
+weights
+**/quantize_result/*

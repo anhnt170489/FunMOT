@@ -1,0 +1,2 @@
+CUDA_VISIBLE_DEVICES=3 python export_xilinx.py mot --data_cfg ../src/lib/cfg/data.json --arch 'resfpndcn_18' --load_model ../weights/silver_1plus/model_best.pth --conf_thres 0.4
+python detect_video.py mot --data_cfg ../src/lib/cfg/data.json --arch 'resfpndcn_18' --load_model ../weights/silver_1plus/model_best.pth --conf_thres 0.4 --input-video /home/ubuntu/workspace/trungdt21/data/AN44_cheo_5fps_black.mp4 --quant 1 --xmodel "./quantize_result"
