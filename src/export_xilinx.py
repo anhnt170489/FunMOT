@@ -34,12 +34,14 @@ def evaluate(model, val_loader, cpu=False, is_deploy=False):
         for i, (path, img) in tqdm(enumerate(val_loader)):
             if is_deploy and i > 5:
                 break
-            # if torch.cuda.is_available():
-            #     blob = torch.from_numpy(img).cuda().unsqueeze(0)
-            # else:
-            #     blob = torch.from_numpy(img).unsqueeze(0)
-            if not cpu:
-                blob = img.cuda()
+            if is_deploy:
+                if not cpu:
+                    blob = torch.from_numpy(img).cuda().unsqueeze(0)
+                else:
+                    blob = torch.from_numpy(img).unsqueeze(0)
+            else:
+                if not cpu:
+                    blob = img.cuda()
             out = model(blob)
     del out
     torch.cuda.empty_cache()
@@ -128,7 +130,7 @@ def quantization(opt, title="optimize", model_name="", file_path=""):
         # )
     elif ext == "mp4":
         ############################# Using Load Video
-        val_loader = datasets.LoadVideo(opt.calib_datapath, (576, 320))
+        val_loader = datasets.LoadVideoCalib(opt.calib_datapath, (576, 320))
 
     if finetune == True:
         if quant_mode == "calib":

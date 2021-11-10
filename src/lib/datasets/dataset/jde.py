@@ -93,6 +93,55 @@ class LoadImagesCalib:  # for inference
         return self.nF  # number of files
 
 
+class LoadVideoCalib:  # for inference
+    def __init__(self, path, img_size=(576, 320)):
+        self.cap = cv2.VideoCapture(path)
+        self.frame_rate = int(round(self.cap.get(cv2.CAP_PROP_FPS)))
+        self.vw = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.vh = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.vn = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        self.width = img_size[0]
+        self.height = img_size[1]
+        self.count = 0
+
+        self.w, self.h = 1920, 1080
+        print("Lenth of the video: {:d} frames".format(self.vn))
+
+    def get_size(self, vw, vh, dw, dh):
+        wa, ha = float(dw) / vw, float(dh) / vh
+        a = min(wa, ha)
+        return int(vw * a), int(vh * a)
+
+    def __iter__(self):
+        self.count = -1
+        return self
+
+    def __next__(self):
+        self.count += 1
+        if self.count == len(self):
+            raise StopIteration
+        # Read image
+        res, img0 = self.cap.read()  # BGR
+        assert img0 is not None, "Failed to load frame {:d}".format(self.count)
+        img0 = cv2.resize(img0, (self.w, self.h))
+
+        # Padded resize
+        img = cv2.resize(img0, (self.width, self.height))
+        # img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
+
+        # Normalize RGB
+        img = img[:, :, ::-1].transpose(2, 0, 1)
+        img = np.ascontiguousarray(img, dtype=np.float32)
+        img /= 255.0
+
+        # cv2.imwrite(img_path + '.letterbox.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # save letterbox image
+        return self.count, img
+
+    def __len__(self):
+        return self.vn  # number of files
+
+
 class LoadImages:  # for inference
     def __init__(self, path, img_size=(1088, 608)):
         if os.path.isdir(path):
@@ -572,7 +621,7 @@ class JointDataset(LoadImagesAndLabels):  # for training
         ids = np.zeros((self.max_objs,), dtype=np.int64)
         bbox_xys = np.zeros((self.max_objs, 4), dtype=np.float32)
         ids_mask = np.ones((self.max_objs,), dtype=np.int64)
-        if ds == 'cvat47' or ds == 'live44':
+        if ds == "cvat47" or ds == "live44":
             ids_mask = np.zeros((self.max_objs,), dtype=np.int64)
 
         draw_gaussian = draw_msra_gaussian if self.opt.mse_loss else draw_umich_gaussian
