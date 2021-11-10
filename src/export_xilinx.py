@@ -23,9 +23,12 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 random.seed(12345)
 
 
-def evaluate(model, val_loader):
+def evaluate(model, val_loader, cpu=False):
     print("evaluating...")
     model.eval()
+    if cpu:
+        model.to("cpu")
+        torch.cuda.empty_cache()
 
     with torch.no_grad():
         for i, (path, img) in tqdm(enumerate(val_loader)):
@@ -35,10 +38,13 @@ def evaluate(model, val_loader):
             #     blob = torch.from_numpy(img).cuda().unsqueeze(0)
             # else:
             #     blob = torch.from_numpy(img).unsqueeze(0)
-            blob = img.cuda()
-            output = model(blob)
+            if not cpu:
+                blob = img.cuda()
+            out = model(blob)
+    del out
+    torch.cuda.empty_cache()
 
-    return 0.0
+    return None
 
 
 def load_data(subset_len, batch_size, lines, img_size):
@@ -93,7 +99,7 @@ def quantization(opt, title="optimize", model_name="", file_path=""):
     # print(quant_model.state_dict())
 
     print("=" * 80)
-    print(f"Quant mode is {quant_mode}, deploy: {deploy}")
+    print(f"Quant mode is {quant_mode}, deploy: {deploy}, fast-finetune: {finetune}")
 
     ext = opt.calib_datapath.split(".")[1]
     if ext in ["txt", "train"]:
@@ -126,7 +132,13 @@ def quantization(opt, title="optimize", model_name="", file_path=""):
 
     if finetune == True:
         if quant_mode == "calib":
-            quantizer.fast_finetune(evaluate, (quant_model, val_loader))
+            ft_loader = load_data(
+                subset_len=1024,
+                batch_size=batch_size,
+                lines=lines,
+                img_size=opt.img_size,
+            )
+            quantizer.fast_finetune(evaluate, (quant_model, ft_loader))
         elif quant_mode == "test":
             quantizer.load_ft_param()
 
@@ -150,6 +162,6 @@ if __name__ == "__main__":
     title = "clgt"
 
     # calibration or evaluation
-    quantization(title=title, model_name=title)
+    quantization(opt, title=title, model_name=title)
 
     print("-------- End of {} test ".format(title))

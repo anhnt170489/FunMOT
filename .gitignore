@@ -144,3 +144,5 @@ videos/
 **/weights/*
 weights
 **/quantize_result/*
+
+*.zip
