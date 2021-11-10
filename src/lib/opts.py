@@ -314,6 +314,20 @@ class opts(object):
         self.parser.add_argument(
             "--not_reg_offset", action="store_true", help="not regress local offset."
         )
+        ##################################################################
+        self.parser.add_argument("--calib_datapath", action="store_true", type=int, help="[Quantization] Path to calib data")
+        self.parser.add_argument(
+            "--subset_len", action="store_true", type=int, help="[Quantization] Length of calib data"
+        )
+        self.parser.add_argument(
+            "--quant-mode", action="store_true", type=str, help="[Quantization] calib|test"
+        )
+        self.parser.add_argument(
+            "--fast_finetune", action="store_true", type=bool, help="[Quantization] Fast finetune flag"
+        )
+        self.parser.add_argument(
+            "--deploy", action="store_true", type=bool, help="[Quantization] true|false"
+        )
 
     def parse(self, args=""):
         if args == "":

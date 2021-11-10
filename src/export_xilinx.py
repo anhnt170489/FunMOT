@@ -16,9 +16,11 @@ import torch
 from track import eval_seq
 from lib.models.model import create_model, load_model
 from tqdm import tqdm
+import random
 
 logger.setLevel(logging.INFO)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+random.seed(12345)
 
 
 def evaluate(model, val_loader):
@@ -39,13 +41,26 @@ def evaluate(model, val_loader):
     return 0.0
 
 
-def quantization(title="optimize", model_name="", file_path=""):
+def load_data(subset_len, batch_size, lines, img_size):
+    dataset = datasets.LoadImagesCalib(lines, img_size)
+    if subset_len:
+        assert subset_len <= len(dataset)
+        dataset = torch.utils.data.Subset(dataset, list(range(subset_len)))
+    data_loader = torch.utils.data.DataLoader(
+        dataset, batch_size=batch_size, shuffle=False
+    )
+    return data_loader
+
+
+def quantization(opt, title="optimize", model_name="", file_path=""):
 
     # quant_mode = args.quant_mode
-    quant_mode = "calib"
-    deploy = False
-    batch_size = 64
-    subset_len = 1
+    quant_mode = opt.quant_mode
+    deploy = opt.deploy
+    batch_size = opt.batch_size
+    subset_len = opt.subset_len
+    finetune = opt.fast_finetune
+
     if quant_mode != "test" and deploy:
         deploy = False
         print(
@@ -58,9 +73,6 @@ def quantization(title="optimize", model_name="", file_path=""):
         )
         batch_size = 1
         subset_len = 1
-
-    result_root = opt.output_root if opt.output_root != "" else "."
-    mkdir_if_missing(result_root)
 
     logger.info("Starting tracking...")
 
@@ -81,47 +93,53 @@ def quantization(title="optimize", model_name="", file_path=""):
     # print(quant_model.state_dict())
 
     print("=" * 80)
-    print(f"Quant mode is {quant_mode}")
-    # record  modules float model accuracy
-    # add modules float model accuracy here
-    # acc_org1 = 0.0
-    # acc_org5 = 0.0
-    # loss_org = 0.0
-    # print(opt.list_images)
-    with open(opt.list_images, "r") as f:
-        lines = f.readlines()
-    data_base_path = "/home/ubuntu/workspace/trungdt21/data_calib_fairmot"
-    print(f"Calib using {opt.list_images}; img_size: {opt.img_size}")
-    lines = list(map(lambda x: os.path.join(data_base_path, x.rstrip()), lines))
-    
-    val_dataset = datasets.LoadImagesCalib(lines, opt.img_size)
-    val_loader = torch.utils.data.DataLoader(
-        val_dataset,
-        batch_size=batch_size,
-        num_workers=1,
-        pin_memory=True,
-        drop_last=True,
-    )
+    print(f"Quant mode is {quant_mode}, deploy: {deploy}")
 
-    # print(opt.input_video)
-    # val_loader = datasets.LoadVideo(opt.input_video, (576, 320))
-    # register_modification_hooks(model_gen, train=False)
+    ext = opt.calib_datapath.split(".")[1]
+    if ext in ["txt", "train"]:
+        with open(opt.calib_datapath, "r") as f:
+            lines = f.readlines()
+        data_base_path = "/home/ubuntu/workspace/trungdt21/data_calib_fairmot"
+        print(f"Calib using {opt.list_images}; img_size: {opt.img_size}")
+        lines = list(map(lambda x: os.path.join(data_base_path, x.rstrip()), lines))
+        ######################### Using load_data
+        val_loader = load_data(
+            subset_len=subset_len,
+            batch_size=batch_size,
+            lines=lines,
+            img_size=opt.img_size,
+        )
+
+        ######################### Using LoadImagesCalib
+
+        # val_dataset = datasets.LoadImagesCalib(lines, opt.img_size)
+        # val_loader = torch.utils.data.DataLoader(
+        #     val_dataset,
+        #     batch_size=batch_size,
+        #     num_workers=1,
+        #     pin_memory=True,
+        #     drop_last=True,
+        # )
+    elif ext == "mp4":
+        ############################# Using Load Video
+        val_loader = datasets.LoadVideo(opt.calib_datapath, (576, 320))
+
+    if finetune == True:
+        if quant_mode == "calib":
+            quantizer.fast_finetune(evaluate, (quant_model, val_loader))
+        elif quant_mode == "test":
+            quantizer.load_ft_param()
+
     evaluate(quant_model, val_loader)
-
-    # print("loss: %g" % (loss_gen))
-    # print("top-1 / top-5 accuracy: %g / %g" % (acc1_gen, acc5_gen))
-
-    # if quant_mode == "test":
-    #     compare(model, quant_model, val_loader)
 
     # handle quantization result
     if quant_mode == "calib":
         quantizer.export_quant_config()
-        quantizer.processor.quantizer.export_param()
+        # quantizer.processor.quantizer.export_param()
 
     if deploy:
         print("DEPLOYING")
-        quant_model.eval()
+        # quant_model.eval()
         quantizer.export_xmodel(deploy_check=True)
 
 
