@@ -23,7 +23,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 random.seed(12345)
 
 
-def evaluate(model, val_loader, cpu=False):
+def evaluate(model, val_loader, cpu=False, is_deploy=False):
     print("evaluating...")
     model.eval()
     if cpu:
@@ -32,8 +32,8 @@ def evaluate(model, val_loader, cpu=False):
 
     with torch.no_grad():
         for i, (path, img) in tqdm(enumerate(val_loader)):
-            # if i > 5:
-            #     break
+            if is_deploy and i > 5:
+                break
             # if torch.cuda.is_available():
             #     blob = torch.from_numpy(img).cuda().unsqueeze(0)
             # else:
@@ -142,7 +142,7 @@ def quantization(opt, title="optimize", model_name="", file_path=""):
         elif quant_mode == "test":
             quantizer.load_ft_param()
 
-    evaluate(quant_model, val_loader)
+    evaluate(quant_model, val_loader, is_deploy=deploy)
 
     # handle quantization result
     if quant_mode == "calib":

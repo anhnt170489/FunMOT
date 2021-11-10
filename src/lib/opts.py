@@ -324,16 +324,15 @@ class opts(object):
         self.parser.add_argument(
             "--quant-mode", type=str, help="[Quantization] calib|test"
         )
-        self.parser.add_argument(
-            "--deploy", type=bool, help="[Quantization] true|false"
-        )
+        self.parser.add_argument("--deploy", dest="deploy", action="store_true")
+        self.parser.add_argument("--no-deploy", dest="deploy", action="store_false")
         self.parser.add_argument(
             "--fast_finetune", dest="fast_finetune", action="store_true"
         )
         self.parser.add_argument(
             "--no-fast_finetune", dest="fast_finetune", action="store_false"
         )
-        self.parser.set_defaults(fast_finetune=False)
+        self.parser.set_defaults(fast_finetune=False, deploy=False)
 
     def parse(self, args=""):
         if args == "":
