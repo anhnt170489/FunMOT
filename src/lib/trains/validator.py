@@ -81,7 +81,8 @@ class Validator:
                         continue
                     x1, y1, w, h = tlwh
                     x2, y2 = x1 + w, y1 + h
-                    line = save_format.format(frame=frame_id, id=track_id, x1=x1, y1=y1, x2=x2, y2=y2, w=w, h=h)
+                    line = save_format.format(
+                        frame=frame_id, id=track_id, x1=x1, y1=y1, x2=x2, y2=y2, w=w, h=h)
                     f.write(line)
         # logger.info('save results to {}'.format(filename))
 
@@ -94,11 +95,13 @@ class Validator:
             img_id = dets[0]
             dets = dets[1]
             for det in dets:
-                ann = {'id': det_count, 'image_id': img_id, 'category_id': 1, 'segmentation': [], 'iscrowd': 0}
+                ann = {'id': det_count, 'image_id': img_id,
+                       'category_id': 1, 'segmentation': [], 'iscrowd': 0}
                 det_count += 1
                 # w, h = det[2] - det[0], det[3] - det[1]
                 w, h = det[2], det[3]
-                ann['bbox'] = [float(det[0]), float(det[1]), float(w), float(h)]
+                ann['bbox'] = [float(det[0]), float(
+                    det[1]), float(w), float(h)]
                 ann['area'] = float(w * h)
                 # ann['score'] = float(det[4])
                 ann['score'] = 1
@@ -251,12 +254,14 @@ class Validator:
             if show_image:
                 cv2.imshow('online_im', online_im)
             if save_dir is not None:
-                cv2.imwrite(os.path.join(save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
+                cv2.imwrite(os.path.join(
+                    save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
             if gt is None:
                 frame_id += SKIP_FRAME + 1
         # save results
         if self.det_only or self.pred_only:
-            self.write_coco_preds(result_filename.replace('.txt', '.json'), images, results)
+            self.write_coco_preds(result_filename.replace(
+                '.txt', '.json'), images, results)
             # pass
         else:
             self.write_results(result_filename, results, data_type)
@@ -283,12 +288,16 @@ class Validator:
             output_dir = os.path.join(self.data_root, '..', 'outputs', exp_name,
                                       seq) if save_images or save_videos else None
             # logger.info('start seq: {}'.format(seq))
-            dataloader = datasets.LoadImages(osp.join(self.data_root, seq, 'img1'), self.opt.img_size)
+            dataloader = datasets.LoadImages(
+                osp.join(self.data_root, seq, 'img1'), self.opt.img_size)
+            print(len(dataloader))
             result_filename = os.path.join(result_root, '{}.txt'.format(seq))
             frame_rate = self.fps
             if os.path.exists(os.path.join(self.data_root, seq, 'seqinfo.ini')):
-                meta_info = open(os.path.join(self.data_root, seq, 'seqinfo.ini')).read()
-                frame_rate = int(meta_info[meta_info.find('frameRate') + 10:meta_info.find('\nseqLength')])
+                meta_info = open(os.path.join(
+                    self.data_root, seq, 'seqinfo.ini')).read()
+                frame_rate = int(meta_info[meta_info.find(
+                    'frameRate') + 10:meta_info.find('\nseqLength')])
 
             # Reading gt
             gt = None
@@ -333,7 +342,7 @@ class Validator:
                         mAPs.append(evaluation.summarize())
                     # print(str(i + 1) + "/" + str(len(self.seqs)) + ":", str(sum(mAPs) / len(mAPs)))
                     Bar.suffix = 'val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
-                        i + 1, len(self.seqs), mAP=sum(mAPs) / len(mAPs))
+                        i + 1, len(self.seqs), mAP=sum(mAPs) / (len(mAPs) + 1e-5))
                 else:
                     evaluator = Evaluator(self.data_root, seq, data_type)
                     accs.append(evaluator.eval_file(result_filename))
@@ -348,14 +357,16 @@ class Validator:
 
             if save_videos:
                 output_video_path = osp.join(output_dir, '{}.mp4'.format(seq))
-                cmd_str = 'ffmpeg -f image2 -i {}/%05d.jpg -c:v copy {}'.format(output_dir, output_video_path)
+                cmd_str = 'ffmpeg -f image2 -i {}/%05d.jpg -c:v copy {}'.format(
+                    output_dir, output_video_path)
                 os.system(cmd_str)
             bar.next()
         timer_avgs = np.asarray(timer_avgs)
         timer_calls = np.asarray(timer_calls)
         all_time = np.dot(timer_avgs, timer_calls)
         avg_time = all_time / np.sum(timer_calls)
-        logger.info('Time elapsed: {:.2f} seconds, FPS: {:.2f}'.format(all_time, 1.0 / avg_time))
+        logger.info('Time elapsed: {:.2f} seconds, FPS: {:.2f}'.format(
+            all_time, 1.0 / avg_time))
         bar.finish()
 
         # get summary
@@ -374,7 +385,8 @@ class Validator:
                     namemap=mm.io.motchallenge_metric_names
                 )
                 print(strsummary)
-                Evaluator.save_summary(summary, os.path.join(result_root, 'summary_{}.xlsx'.format(exp_name)), epoch)
+                Evaluator.save_summary(summary, os.path.join(
+                    result_root, 'summary_{}.xlsx'.format(exp_name)), epoch)
                 return mota
             else:
-                return sum(mAPs) / len(mAPs)
+                return sum(mAPs) / (len(mAPs) + 1e-5)
