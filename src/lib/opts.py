@@ -226,23 +226,41 @@ class opts(object):
             opt.load_model = os.path.join(model_path, 'model_last.pth')
         return opt
 
-    def update_dataset_info_and_set_heads(self, opt, dataset=None):
-        # input_h, input_w = dataset.default_resolution
-        # opt.mean, opt.std = dataset.mean, dataset.std
-        # opt.num_classes = dataset.num_classes
-
-        # # input_h(w): opt.input_h overrides opt.input_res overrides dataset default
-        # input_h = opt.input_res if opt.input_res > 0 else input_h
-        # input_w = opt.input_res if opt.input_res > 0 else input_w
-        # opt.input_h = opt.input_h if opt.input_h > 0 else input_h
-        # opt.input_w = opt.input_w if opt.input_w > 0 else input_w
-        # opt.output_h = opt.input_h // opt.down_ratio
-        # opt.output_w = opt.input_w // opt.down_ratio
-        # opt.input_res = max(opt.input_h, opt.input_w)
-        # opt.output_res = max(opt.output_h, opt.output_w)
+    def update_set_heads(self, opt):
         opt.num_classes = 1
-        # print(dataset.nID)
-        # raise 1 == 3
+        if opt.task == 'mot':
+            opt.heads = {'hm': opt.num_classes,
+                         'wh': 2 if not opt.ltrb else 4,
+                         'id': opt.reid_dim}
+            if opt.reg_offset:
+                opt.heads.update({'reg': 2})
+            # opt.nID = dataset.nID
+            if opt.arch == 'resfpndcn_18':
+                opt.img_size = (576, 320)
+            else:
+                opt.img_size = (1088, 608)
+                # opt.img_size = (864, 480)
+                # opt.img_size = (576, 320)
+        else:
+            assert 0, 'task not defined!'
+        print('heads', opt.heads)
+        return opt
+
+    def update_dataset_info_and_set_heads(self, opt, dataset):
+        input_h, input_w = dataset.default_resolution
+        opt.mean, opt.std = dataset.mean, dataset.std
+        opt.num_classes = dataset.num_classes
+
+        # input_h(w): opt.input_h overrides opt.input_res overrides dataset default
+        input_h = opt.input_res if opt.input_res > 0 else input_h
+        input_w = opt.input_res if opt.input_res > 0 else input_w
+        opt.input_h = opt.input_h if opt.input_h > 0 else input_h
+        opt.input_w = opt.input_w if opt.input_w > 0 else input_w
+        opt.output_h = opt.input_h // opt.down_ratio
+        opt.output_w = opt.input_w // opt.down_ratio
+        opt.input_res = max(opt.input_h, opt.input_w)
+        opt.output_res = max(opt.output_h, opt.output_w)
+
         if opt.task == 'mot':
             opt.heads = {'hm': opt.num_classes,
                          'wh': 2 if not opt.ltrb else 4,
