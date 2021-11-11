@@ -2,54 +2,92 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import logging
-import os
-import os.path as osp
-
 import _init_paths
 
-import cv2
-import datasets.dataset.jde as datasets
-import motmetrics as mm
-import numpy as np
-import torch
-from opts import opts
-from tracker.multitracker import JDETracker
-from tracking_utils import visualization as vis
-from tracking_utils.evaluation import Evaluator
-from tracking_utils.log import logger
-from tracking_utils.timer import Timer
-from tracking_utils.utils import mkdir_if_missing
-from trains.validator import Validator
-from models.model import create_model, load_model
+import os
 
 import json
-from tracker import matching
+import torch
+import torch.utils.data
+from torchvision.transforms import transforms as T
+from opts import opts
+from models.model import create_model, load_model
+from logger import Logger
+from datasets.dataset_factory import get_dataset
+from trains.validator import Validator
 
-if __name__ == '__main__':
-    torch.cuda.set_device(0)
-    opt = opts().init()
+
+def main(opt):
+    torch.manual_seed(opt.seed)
+    torch.backends.cudnn.benchmark = not opt.not_cuda_benchmark and not opt.test
+
+    print('Setting up data...')
+    # Dataset = get_dataset(opt.dataset, opt.task)
+    # f = open(opt.data_cfg)
+    # data_config = json.load(f)
+    # trainset_paths = data_config['train']
+    # dataset_root = data_config['root']
+    # f.close()
+    # transforms = T.Compose([T.ToTensor()])
+    # img_size = (opt.input_w, opt.input_h)
+    # dataset = Dataset(opt, dataset_root, trainset_paths,
+    #                   img_size, augment=True, transforms=transforms)
+    # opt = opts().update_dataset_info_and_set_heads(opt, dataset)
+    opt = opts().update_dataset_info_and_set_heads(opt)
+    print(opt)
+
+    logger = Logger(opt)
+
+    os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
     opt.device = torch.device('cuda' if opt.gpus[0] >= 0 else 'cpu')
 
+    print('Creating model...')
     model = create_model(opt.arch, opt.heads, opt.head_conv)
-    model = load_model(model, opt.load_model)
-    model = model.to(opt.device)
 
-    # validator_det = Validator(opt, model=model, det_only=True)
-    validator_ids = Validator(opt, model=model, det_only=opt.det_only, pred_only=opt.pred_only)
+    # Get dataloader
+    print('Starting training...')
+    start_epoch = 0
+    # if opt.load_model != '':
+    model = load_model(
+        model, opt.load_model)
+    model.to('cuda')
+    # model.cuda()
+    # best_score = -1
 
-    # det_mAP = validator_det.evaluate(
-    #     exp_name=opt.exp_id,
-    #     epoch=0,
-    #     show_image=False,
-    #     save_images=True,
-    #     save_videos=False
-    # )
-
-    ids_mota = validator_ids.evaluate(
-        exp_name=opt.exp_id,
-        epoch=0,
+    validator_det = Validator(opt, model=model, det_only=True)
+    # validator_ids = Validator(opt, model=model, det_only=False)
+    validator_ids = Validator(
+        opt, model=model, det_only=False)
+    print('Starting evaluating...')
+    det_mAP = validator_det.evaluate(
+        exp_name=opt.exp_id + '_val',
+        epoch=start_epoch,
         show_image=False,
-        save_images=True,
+        save_images=False,
         save_videos=False
     )
+
+    ids_mota = validator_ids.evaluate(
+        exp_name=opt.exp_id + '_val',
+        epoch=start_epoch,
+        show_image=False,
+        save_images=False,
+        save_videos=False
+    )
+
+    # score = det_mAP + ids_mota
+    logger.write('\n')
+    logger.write('epoch: {} | mAP: {} | MOTA: {}'.format(
+        start_epoch, det_mAP, ids_mota))
+
+
+if __name__ == '__main__':
+    args = ['mot',
+            '--arch=resfpndcn_18',
+            '--conf_thres=0.4',
+            '--data_cfg=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/src/lib/cfg/vsm.json',
+            # '--reid_dim=64',
+            # '--val_half',
+            '--load_model=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/models/FM_pretrained/model_best.pth']
+    opt = opts().init(args)
+    main(opt)

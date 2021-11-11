@@ -342,7 +342,7 @@ class Validator:
                         mAPs.append(evaluation.summarize())
                     # print(str(i + 1) + "/" + str(len(self.seqs)) + ":", str(sum(mAPs) / len(mAPs)))
                     Bar.suffix = 'val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
-                        i + 1, len(self.seqs), mAP=sum(mAPs) / (len(mAPs) + 1e-5))
+                        i + 1, len(self.seqs), mAP=sum(mAPs) / (len(mAPs)))
                 else:
                     evaluator = Evaluator(self.data_root, seq, data_type)
                     accs.append(evaluator.eval_file(result_filename))
@@ -389,4 +389,4 @@ class Validator:
                     result_root, 'summary_{}.xlsx'.format(exp_name)), epoch)
                 return mota
             else:
-                return sum(mAPs) / (len(mAPs) + 1e-5)
+                return sum(mAPs) / (len(mAPs))
