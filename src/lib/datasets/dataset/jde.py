@@ -53,7 +53,8 @@ class LoadImages:  # for inference
         assert img0 is not None, 'Failed to load ' + img_path
 
         # Padded resize
-        img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
+        img = cv2.resize(img0, (self.width, self.height))
+        # img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)
@@ -72,7 +73,8 @@ class LoadImages:  # for inference
         assert img0 is not None, 'Failed to load ' + img_path
 
         # Padded resize
-        img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
+        img = cv2.resize(img0, (self.width, self.height))
+        # img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)
@@ -115,11 +117,15 @@ class LoadVideo:  # for inference
             raise StopIteration
         # Read image
         res, img0 = self.cap.read()  # BGR
-        assert img0 is not None, 'Failed to load frame {:d}'.format(self.count)
+        if img0 is None:
+            print('Failed to load frame {:d}'.format(self.count))
+            return self.count, None, img0
+        # assert img0 is not None, 'Failed to load frame {:d}'.format(self.count)
         img0 = cv2.resize(img0, (self.w, self.h))
 
         # Padded resize
-        img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
+        img = cv2.resize(img0, (self.width, self.height))
+        # img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)
@@ -185,7 +191,10 @@ class LoadImagesAndLabels:  # for training
             cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)
 
         h, w, _ = img.shape
-        img, ratio, padw, padh = letterbox(img, height=height, width=width)
+        # img, ratio, padw, padh = letterbox(img, height=height, width=width)
+        img = cv2.resize(img, (width, height))
+        ratio_h = float(height) / h
+        ratio_w = float(width) / w
 
         # Load labels
         if os.path.isfile(label_path):
@@ -193,10 +202,14 @@ class LoadImagesAndLabels:  # for training
 
             # Normalized xywh to pixel xyxy format
             labels = labels0.copy()
-            labels[:, 2] = ratio * w * (labels0[:, 2] - labels0[:, 4] / 2) + padw
-            labels[:, 3] = ratio * h * (labels0[:, 3] - labels0[:, 5] / 2) + padh
-            labels[:, 4] = ratio * w * (labels0[:, 2] + labels0[:, 4] / 2) + padw
-            labels[:, 5] = ratio * h * (labels0[:, 3] + labels0[:, 5] / 2) + padh
+            # labels[:, 2] = ratio * w * (labels0[:, 2] - labels0[:, 4] / 2) + padw
+            # labels[:, 3] = ratio * h * (labels0[:, 3] - labels0[:, 5] / 2) + padh
+            # labels[:, 4] = ratio * w * (labels0[:, 2] + labels0[:, 4] / 2) + padw
+            # labels[:, 5] = ratio * h * (labels0[:, 3] + labels0[:, 5] / 2) + padh
+            labels[:, 2] = ratio_w * w * (labels0[:, 2] - labels0[:, 4] / 2)
+            labels[:, 3] = ratio_h * h * (labels0[:, 3] - labels0[:, 5] / 2)
+            labels[:, 4] = ratio_w * w * (labels0[:, 2] + labels0[:, 4] / 2)
+            labels[:, 5] = ratio_h * h * (labels0[:, 3] + labels0[:, 5] / 2)
         else:
             labels = np.array([])
 

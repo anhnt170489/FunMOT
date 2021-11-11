@@ -77,6 +77,22 @@ def main(opt):
         validator_det = Validator(opt, model=model, det_only=True)
         validator_ids = Validator(opt, model=model, det_only=False)
 
+        validator_det.evaluate(
+            exp_name=opt.exp_id + '_val',
+            epoch=0,
+            show_image=False,
+            save_images=False,
+            save_videos=False
+        )
+
+        validator_ids.evaluate(
+            exp_name=opt.exp_id + '_val',
+            epoch=0,
+            show_image=False,
+            save_images=False,
+            save_videos=False
+        )
+
     print('Starting training...')
     Trainer = train_factory[opt.task]
     trainer = Trainer(opt, model, optimizer)
