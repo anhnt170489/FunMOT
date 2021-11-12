@@ -268,7 +268,7 @@ class Validator:
         # write_results_score(result_filename, results, data_type)
         return frame_id, timer.average_time, timer.calls
 
-    def evaluate(self, exp_name='demo', epoch=0, save_images=False, save_videos=False, show_image=True):
+    def evaluate(self, exp_name='demo', epoch=0, save_images=False, save_videos=False, show_image=True, logger_main=None):
         logger.setLevel(logging.INFO)
         result_root = os.path.join(self.data_root, '..', 'results', exp_name)
         mkdir_if_missing(result_root)
@@ -341,6 +341,9 @@ class Validator:
                         evaluation.accumulate()
                         mAPs.append(evaluation.summarize())
                     # print(str(i + 1) + "/" + str(len(self.seqs)) + ":", str(sum(mAPs) / len(mAPs)))
+                    logger_main.write('\n')
+                    logger_main.write('val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
+                        i + 1, len(self.seqs), mAP=sum(mAPs) / (len(mAPs))))
                     Bar.suffix = 'val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
                         i + 1, len(self.seqs), mAP=sum(mAPs) / (len(mAPs)))
                 else:
@@ -351,6 +354,10 @@ class Validator:
                     recall = res.recall['OVERALL']
                     precision = res.precision['OVERALL']
                     mota = res.mota['OVERALL']
+                    logger_main.write('\n')
+                    logger_main.write('val: [{0}/{1}]|R: {recall:} |P: {precision:} |M: {mota:} |Score: {score:}'.format(
+                        i + 1, len(self.seqs), recall=recall, precision=precision, mota=mota,
+                        score=recall * 0.4 + precision * 0.3 + mota * 0.3))
                     Bar.suffix = 'val: [{0}/{1}]|R: {recall:} |P: {precision:} |M: {mota:} |Score: {score:}'.format(
                         i + 1, len(self.seqs), recall=recall, precision=precision, mota=mota,
                         score=recall * 0.4 + precision * 0.3 + mota * 0.3)
