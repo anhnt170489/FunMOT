@@ -22,7 +22,7 @@ def main(opt):
     torch.backends.cudnn.benchmark = not opt.not_cuda_benchmark and not opt.test
 
     print('Setting up head of model ...')
-    opt = opts().update_set_heads(opt)
+    opt = opts().update_res_and_set_heads(opt)
     print(opt)
 
     logger = Logger(opt)
@@ -45,25 +45,27 @@ def main(opt):
     validator_ids = Validator(opt, model=model, det_only=False)
 
     print('Starting evaluating...')
-    det_mAP = validator_det.evaluate(
-        exp_name=opt.exp_id + '_val',
-        epoch=start_epoch,
-        show_image=False,
-        save_images=False,
-        save_videos=False
-    )
-
     ids_mota = validator_ids.evaluate(
         exp_name=opt.exp_id + '_val',
         epoch=start_epoch,
-        show_image=False,
-        save_images=False,
-        save_videos=False
+        show_image=True,
+        save_images=True,
+        save_videos=False,
+        logger_main=logger
     )
+    det_mAP = validator_det.evaluate(
+        exp_name=opt.exp_id + '_val',
+        epoch=start_epoch,
+        show_image=True,
+        save_images=True,
+        save_videos=False,
+        logger_main=logger
+    )
+
     print("Finished evaluate.")
     # score = det_mAP + ids_mota
     logger.write('\n')
-    logger.write('epoch: {} | mAP: {} | MOTA: {}'.format(
+    logger.write('Final result: {} | mAP: {} | MOTA: {}'.format(
         start_epoch, det_mAP, ids_mota))
 
 
@@ -71,7 +73,9 @@ if __name__ == '__main__':
     args = ['mot',
             '--arch=resfpndcn_18',
             '--conf_thres=0.4',
-            '--data_cfg=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/src/lib/cfg/vsm.json',
-            '--load_model=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/models/FM_pretrained/model_best.pth']
+            '--input_h=256',
+            '--input_w=480',
+            '--data_cfg=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/src/lib/cfg/LT.json',
+            '--load_model=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/models/silver_1/model_best.pth']
     opt = opts().init(args)
     main(opt)

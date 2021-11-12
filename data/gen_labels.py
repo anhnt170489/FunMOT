@@ -104,15 +104,15 @@ def read_anno_hs_file(path, file_name, image_id, width, height):
         list_annos.append([
             str(image_id),
             str(track_id),
-            str(tlwh[0]),
-            str(tlwh[1]),
-            str(tlwh[2]),
-            str(tlwh[3]),
-            '1',
-            '1',
-            '1'
+            str(int(tlwh[0])),
+            str(int(tlwh[1])),
+            str(int(tlwh[2])),
+            str(int(tlwh[3])),
+            '0',
+            '7',
+            '1.000000'
         ])
-        return list_annos
+    return list_annos
 
 
 def write_gt_coco(data_path, annos_path):
@@ -180,7 +180,7 @@ def save_hs_to_file(save_hs_path, hs_file):
     print(len(hs_file))
     with open(os.path.join(save_hs_path, 'gt.txt'), 'w') as f:
         for label in hs_file:
-            label = " ".join(label) + '\n'
+            label = ",".join(label) + '\n'
             f.write(label)
 
 
@@ -194,7 +194,7 @@ def main(args):
     # TODO: Read dataset
     for data in data_set:
 
-        data_path = os.path.join(image_dir, data)
+        data_path = os.path.join(image_dir, data, 'img1')
         annos_path = os.path.join(annos_dir, data)
         print("image dir", data_path)
         print("annos dir", annos_path)

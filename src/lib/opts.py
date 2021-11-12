@@ -226,7 +226,18 @@ class opts(object):
             opt.load_model = os.path.join(model_path, 'model_last.pth')
         return opt
 
-    def update_set_heads(self, opt):
+    def update_res_and_set_heads(self, opt):
+        # input_h = opt.input_res if opt.input_res > 0 else input_h
+        # input_w = opt.input_res if opt.input_res > 0 else input_w
+        opt.input_h = opt.input_h if opt.input_h > 0 else 0
+        opt.input_w = opt.input_w if opt.input_w > 0 else 0
+        print("input_h, input_w", opt.input_h, opt.input_w)
+        opt.output_h = opt.input_h // opt.down_ratio
+        opt.output_w = opt.input_w // opt.down_ratio
+        print("output_h, output_w", opt.output_h, opt.output_w)
+        opt.input_res = max(opt.input_h, opt.input_w)
+        opt.output_res = max(opt.output_h, opt.output_w)
+        print("input_res, output_res", opt.input_res, opt.output_res)
         opt.num_classes = 1
         if opt.task == 'mot':
             opt.heads = {'hm': opt.num_classes,
@@ -237,6 +248,8 @@ class opts(object):
             # opt.nID = dataset.nID
             if opt.arch == 'resfpndcn_18':
                 opt.img_size = (576, 320)
+                # opt.img_size = (480, 256)
+                # opt.img_size = (384, 224)
             else:
                 opt.img_size = (1088, 608)
                 # opt.img_size = (864, 480)
