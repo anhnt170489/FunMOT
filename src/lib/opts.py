@@ -37,6 +37,8 @@ class opts(object):
                                  help='random seed')  # from CornerNet
 
         # log
+        self.parser.add_argument('--log_model_dir', type=str, default='test',
+                                 help='save log of specific model.')
         self.parser.add_argument('--print_iter', type=int, default=0,
                                  help='disable progress bar and print to screen.')
         self.parser.add_argument('--hide_data_time', action='store_true',
@@ -60,6 +62,8 @@ class opts(object):
                                       '256 for resnets and 256 for dla.')
         self.parser.add_argument('--down_ratio', type=int, default=4,
                                  help='output stride. Currently only supports 4.')
+        self.parser.add_argument('--img_size', default=(576, 320),
+                                 help='input image size')
 
         # input
         self.parser.add_argument('--input_res', type=int, default=-1,
@@ -229,15 +233,15 @@ class opts(object):
     def update_res_and_set_heads(self, opt):
         # input_h = opt.input_res if opt.input_res > 0 else input_h
         # input_w = opt.input_res if opt.input_res > 0 else input_w
-        opt.input_h = opt.input_h if opt.input_h > 0 else 0
-        opt.input_w = opt.input_w if opt.input_w > 0 else 0
-        print("input_h, input_w", opt.input_h, opt.input_w)
-        opt.output_h = opt.input_h // opt.down_ratio
-        opt.output_w = opt.input_w // opt.down_ratio
-        print("output_h, output_w", opt.output_h, opt.output_w)
-        opt.input_res = max(opt.input_h, opt.input_w)
-        opt.output_res = max(opt.output_h, opt.output_w)
-        print("input_res, output_res", opt.input_res, opt.output_res)
+        # opt.input_h = opt.input_h if opt.input_h > 0 else 0
+        # opt.input_w = opt.input_w if opt.input_w > 0 else 0
+        # print("input_h, input_w", opt.input_h, opt.input_w)
+        # opt.output_h = opt.input_h // opt.down_ratio
+        # opt.output_w = opt.input_w // opt.down_ratio
+        # print("output_h, output_w", opt.output_h, opt.output_w)
+        # opt.input_res = max(opt.input_h, opt.input_w)
+        # opt.output_res = max(opt.output_h, opt.output_w)
+        # print("input_res, output_res", opt.input_res, opt.output_res)
         opt.num_classes = 1
         if opt.task == 'mot':
             opt.heads = {'hm': opt.num_classes,
@@ -247,7 +251,10 @@ class opts(object):
                 opt.heads.update({'reg': 2})
             # opt.nID = dataset.nID
             if opt.arch == 'resfpndcn_18':
-                opt.img_size = (576, 320)
+                img_size = str(opt.img_size)[1:-1].split(',')
+                img_width = int(img_size[0])
+                img_height = int(img_size[1])
+                opt.img_size = (img_width, img_height)
                 # opt.img_size = (480, 256)
                 # opt.img_size = (384, 224)
             else:
@@ -282,7 +289,9 @@ class opts(object):
                 opt.heads.update({'reg': 2})
             # opt.nID = dataset.nID
             if opt.arch == 'resfpndcn_18':
-                opt.img_size = (576, 320)
+                opt.img_size = opt.img_size
+                # opt.img_size = (480, 256)
+                # opt.img_size = (384, 244)
             else:
                 opt.img_size = (1088, 608)
                 # opt.img_size = (864, 480)

@@ -45,19 +45,19 @@ def main(opt):
     validator_ids = Validator(opt, model=model, det_only=False)
 
     print('Starting evaluating...')
-    ids_mota = validator_ids.evaluate(
-        exp_name=opt.exp_id + '_val',
-        epoch=start_epoch,
-        show_image=True,
-        save_images=True,
-        save_videos=False,
-        logger_main=logger
-    )
     det_mAP = validator_det.evaluate(
         exp_name=opt.exp_id + '_val',
         epoch=start_epoch,
-        show_image=True,
-        save_images=True,
+        show_image=False,
+        save_images=False,
+        save_videos=False,
+        logger_main=logger
+    )
+    ids_mota = validator_ids.evaluate(
+        exp_name=opt.exp_id + '_val',
+        epoch=start_epoch,
+        show_image=False,
+        save_images=False,
         save_videos=False,
         logger_main=logger
     )
@@ -73,9 +73,11 @@ if __name__ == '__main__':
     args = ['mot',
             '--arch=resfpndcn_18',
             '--conf_thres=0.4',
-            '--input_h=256',
-            '--input_w=480',
+            '--img_size=(576,320)',
+            # '--img_size=(480,256)',
+            # '--img_size=(384,224)',
             '--data_cfg=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/src/lib/cfg/LT.json',
-            '--load_model=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/models/silver_1/model_best.pth']
+            '--load_model=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/models/model_1310/model_42.pth',
+            '--log_model_dir=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/exp/lab/model_1310']
     opt = opts().init(args)
     main(opt)

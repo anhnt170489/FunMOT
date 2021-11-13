@@ -25,6 +25,21 @@ from pycocotools.cocoeval import COCOeval
 from tracking_utils.coco_eval_smartcity import COCOeval2
 
 SKIP_FRAME = 0
+DEBUG = False
+
+
+def handle_hs_file(gt_hs_path):
+    gt_hs = {}
+    with open(gt_hs_path) as file:
+        for line in file:
+            line = line.rstrip().split(',')
+            image_id, track_id, t, l, w, h, _, _, _ = line
+            tlwh = [int(t), int(l), int(w), int(h)]
+            if int(image_id) in gt_hs:
+                gt_hs[int(image_id)].append((track_id, tlwh))
+            else:
+                gt_hs[int(image_id)] = [(track_id, tlwh)]
+    return gt_hs
 
 
 class Validator:
@@ -61,7 +76,7 @@ class Validator:
         new_l -= h / 4
         new_w += h / 2
         new_h += h / 2
-        # return new_t / 1920, new_l / 1080, new_w / 1920, new_h / 1080
+
         return new_t, new_l, new_w, new_h
 
     def write_results(self, filename, results, data_type):
@@ -84,7 +99,6 @@ class Validator:
                     line = save_format.format(
                         frame=frame_id, id=track_id, x1=x1, y1=y1, x2=x2, y2=y2, w=w, h=h)
                     f.write(line)
-        # logger.info('save results to {}'.format(filename))
 
     def write_coco_preds(self, filename, images, results):
         # out = {'images': gt['images'], 'annotations': gt['annotations'],
@@ -106,9 +120,6 @@ class Validator:
                 # ann['score'] = float(det[4])
                 ann['score'] = 1
                 out['annotations'].append(ann)
-        # for ann in gt['annotations']:
-        #     ann['score'] = 1
-        #     out['annotations'].append(ann)
 
         json.dump(out, open(filename, 'w'))
 
@@ -145,12 +156,15 @@ class Validator:
                 start_frame = 0
                 frame_id = 0
         images = []
+
         if gt is not None:
-            images = gt[0]
+            if DEBUG:
+                images, gt, gt_hs = gt
+            else:
+                images, gt = gt
             img_name_2_ids = {}
             for image in images:
                 img_name_2_ids[image['file_name']] = image['id']
-            gt = gt[1]
 
         for i, (path, img, img0) in enumerate(dataloader):
             if i < start_frame:
@@ -160,8 +174,6 @@ class Validator:
             if gt is not None:
                 if path.split('/')[-1] not in img_name_2_ids:
                     continue
-            # if frame_id % 20 == 0:
-            #     logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
 
             img_id = frame_id + 1
             img_name = path.split('/')[-1]
@@ -172,6 +184,15 @@ class Validator:
                 img_name = path.split('/')[-1]
                 img_id = img_name_2_ids[img_name]
                 frame_id = img_id
+            # This code is for debugging
+            if DEBUG:
+                if gt_hs is not None:
+                    gt_hs_tlhws = []
+                    gt_ids = []
+                    tmp_gt = gt_hs[img_id]
+                    for track_id, tlwh in tmp_gt:
+                        gt_ids.append(track_id)
+                        gt_hs_tlhws.append(tlwh)
 
             # run tracking
             timer.tic()
@@ -203,39 +224,6 @@ class Validator:
                         online_tlwhs.append(tlwh)
                         online_ids.append(1)
 
-            # matching with gt
-            # online_head_tlbrs = [np.array(online_head_area[0]) for online_head_area in online_head_areas]
-            # online_head_tlwhs = [np.array(online_head_area[1]) for online_head_area in online_head_areas]
-            # gt_tlhws = []
-            # gt_hs_tlhws = []
-            # gt_ids = []
-
-            # Printing GT
-            # if img_id in gt:
-            #     frm_gts = gt[img_id]
-            #     gt_tlbrs = [
-            #         np.array([frm_gt[1][0], frm_gt[1][1], frm_gt[1][0] + frm_gt[1][2], frm_gt[1][1] + frm_gt[1][3]])
-            #         for frm_gt in frm_gts]
-            #     gt_tlhws = [np.array([frm_gt[1][0], frm_gt[1][1], frm_gt[1][2], frm_gt[1][3]]) for frm_gt in
-            #                 frm_gts]
-            #     for frm_gt in frm_gts:
-            #         # hs_tlwh = self.get_hs_tlwh(frm_gt[1])
-            #         hs_tlwh = frm_gt[1]
-            #         hs_tlwh = np.array([hs_tlwh[0], hs_tlwh[1], hs_tlwh[2], hs_tlwh[3]])
-            #         # gt_hs_tlhws.append(hs_tlwh)
-            #         # # gt_ids.append(frm_gt[0])
-            #         # gt_ids.append(1)
-            #         online_tlwhs.append(hs_tlwh)
-            #         online_ids.append(0)
-
-            # # gt_ids = [frm_gt[0] for frm_gt in frm_gts]
-            # _ious = matching.ious(online_head_tlbrs, gt_tlbrs)
-            # cost_matrix = 1 - _ious
-            # matches, _, _ = matching.linear_assignment(cost_matrix, thresh=1)
-            # for match in matches:
-            #     online_idx, gt_idx = match
-            #     online_head_tlwhs[online_idx] = gt_tlhws[gt_idx]
-
             timer.toc()
             # save results
             if self.det_only or self.pred_only:
@@ -251,6 +239,7 @@ class Validator:
                 #                               fps=1. / timer.average_time)
                 # online_im = vis.plot_tracking(img0, gt_hs_tlhws, gt_ids, frame_id=frame_id,
                 #                               fps=1. / timer.average_time)
+
             if show_image:
                 cv2.imshow('online_im', online_im)
             if save_dir is not None:
@@ -290,7 +279,6 @@ class Validator:
             # logger.info('start seq: {}'.format(seq))
             dataloader = datasets.LoadImages(
                 osp.join(self.data_root, seq, 'img1'), self.opt.img_size)
-            print(len(dataloader))
             result_filename = os.path.join(result_root, '{}.txt'.format(seq))
             frame_rate = self.fps
             if os.path.exists(os.path.join(self.data_root, seq, 'seqinfo.ini')):
@@ -299,12 +287,18 @@ class Validator:
                 frame_rate = int(meta_info[meta_info.find(
                     'frameRate') + 10:meta_info.find('\nseqLength')])
 
-            # Reading gt
+                # Reading gt
             gt = None
             if self.det_only and not self.pred_only:
                 gt_path = osp.join(self.data_root, seq, 'gt_coco', 'gt.json')
                 # gt_path = osp.join(self.data_root, seq, 'annotations', 'instances_default.json')
                 # gt_path = osp.join(self.data_root, seq, 'gt_pseudo', 'gt.json')
+                # This for debug
+                if DEBUG:
+                    gt_hs_path = os.path.join(
+                        self.data_root, seq, 'gt_hs', 'gt.txt')
+                    gt_hs = handle_hs_file(gt_hs_path)
+
                 gt_json = json.load(open(gt_path))
                 gt = {}
                 for ann in gt_json['annotations']:
@@ -316,7 +310,10 @@ class Validator:
                         gt[img_id].append((track_id, tlwh))
                     else:
                         gt[img_id] = [(track_id, tlwh)]
-                gt = (gt_json['images'], gt)
+                if DEBUG:
+                    gt = (gt_json['images'], gt, gt_hs)
+                else:
+                    gt = (gt_json['images'], gt)
 
             # eval
             nf, ta, tc = self.eval_seq(seq, dataloader, data_type, result_filename, gt=gt,
@@ -344,6 +341,9 @@ class Validator:
                     logger_main.write('\n')
                     logger_main.write('val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
                         i + 1, len(self.seqs), mAP=sum(mAPs) / (len(mAPs))))
+                    logger_main.write('\t')
+                    logger_main.write('val_each_set: [{0}/{1}]|mAP@.5: {mAP:}'.format(
+                        i + 1, len(self.seqs), mAP=evaluation.summarize()))
                     Bar.suffix = 'val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
                         i + 1, len(self.seqs), mAP=sum(mAPs) / (len(mAPs)))
                 else:
@@ -391,6 +391,8 @@ class Validator:
                     formatters=mh.formatters,
                     namemap=mm.io.motchallenge_metric_names
                 )
+                logger_main.write('\n')
+                logger_main.write(strsummary)
                 print(strsummary)
                 Evaluator.save_summary(summary, os.path.join(
                     result_root, 'summary_{}.xlsx'.format(exp_name)), epoch)

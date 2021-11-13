@@ -37,7 +37,7 @@ class LoadImages:  # for inference
         self.height = img_size[1]
         # self.width = 480
         # self.height = 256
-        print(self.width, self.height)
+        print("self.width, self.height", self.width, self.height)
         self.count = 0
 
         assert self.nF > 0, 'No images found in ' + path
