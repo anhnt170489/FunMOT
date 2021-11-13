@@ -73,11 +73,11 @@ if __name__ == '__main__':
     args = ['mot',
             '--arch=resfpndcn_18',
             '--conf_thres=0.4',
-            '--img_size=(576,320)',
+            # '--img_size=(576,320)',
             # '--img_size=(480,256)',
-            # '--img_size=(384,224)',
+            '--img_size=(384,224)',
             '--data_cfg=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/src/lib/cfg/LT.json',
             '--load_model=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/models/model_1310/model_42.pth',
-            '--log_model_dir=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/exp/lab/model_1310']
+            '--log_model_dir=/home/namtd/workspace/projects/smart-city/src/G1-phase3/pseudo-label/FunMOT/exp/lab/model_1310_384']
     opt = opts().init(args)
     main(opt)

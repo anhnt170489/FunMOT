@@ -25,7 +25,8 @@ def demo(opt):
     result_filename = os.path.join(result_root, 'results.txt')
     frame_rate = dataloader.frame_rate
 
-    frame_dir = None if opt.output_format == 'text' else osp.join(result_root, 'frame')
+    frame_dir = None if opt.output_format == 'text' else osp.join(
+        result_root, 'frame')
     eval_seq(opt, dataloader, 'mot', result_filename,
              save_dir=frame_dir, show_image=False, frame_rate=frame_rate,
              use_cuda=opt.gpus != [-1])
@@ -41,14 +42,14 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     args = ['mot',
             # '--arch=resfpndcn_34',
-            # '--arch=resfpndcn_18',
+            '--arch=resfpndcn_18',
             '--conf_thres=0.4',
-            '--input-video=../videos/AN12_0_5.mp4',
-            '--output-root=../out/videos/AN12_0_5_pretrained',
+            '--input-video=../videos/test.mp4',
+            '--output-root=../out/videos/test',
             # '--val_mot17=True',y
             # '--val_mot15=True',
             # '--load_model=../models/mix_half_live_ft_resfpndcn_18_576_320/model_best_2nd.pth']
-            '--load_model=../models/FM_pretrained/fairmot_dla34.pth']
+            '--load_model=../models/model_1310/model_42.pth']
     # '--load_model=../models/crowdhuman_head_resnet34fpn/model_last.pth']
     opt = opts().init(args)
     demo(opt)

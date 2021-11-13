@@ -128,6 +128,7 @@ class LoadVideo:  # for inference
 
         # Padded resize
         img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
+        img = cv2.resize(img0, (self.width, self.height))
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)
