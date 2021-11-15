@@ -44,12 +44,12 @@ if __name__ == '__main__':
             # '--arch=resfpndcn_34',
             '--arch=resfpndcn_18',
             '--conf_thres=0.4',
-            '--input-video=../videos/test.mp4',
+            '--input-video=../videos/NotMask_Pub_P_10.mp4',
             '--output-root=../out/videos/test',
             # '--val_mot17=True',y
             # '--val_mot15=True',
             # '--load_model=../models/mix_half_live_ft_resfpndcn_18_576_320/model_best_2nd.pth']
-            '--load_model=../models/model_1310/model_42.pth']
+            '--load_model=../models/silver_1/model_best.pth']
     # '--load_model=../models/crowdhuman_head_resnet34fpn/model_last.pth']
     opt = opts().init(args)
     demo(opt)
