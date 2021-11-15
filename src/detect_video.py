@@ -21,6 +21,7 @@ from models.model import create_model, load_model
 from tracking_utils.timer import Timer
 from tracking_utils.utils import xyxy2xywh
 from tracking_utils import visualization as vis
+
 from pytorch_nndct.apis import torch_quantizer
 
 
@@ -90,26 +91,21 @@ def eval_seq(
     # model = torch.nn.DataParallel(model)
     model = model.to(opt.device)
 
-    if opt.quant:
-        print("Im here")
-        x = torch.randn([1, 3, 320, 576])
-        quantizer = torch_quantizer(
-            "test", model, (x), output_dir=opt.xmodel, device=opt.device
-        )
-        model = quantizer.quant_model
+    # if opt.quant:
+    #     print("Im here")
+    #     x = torch.randn([1, 3, 320, 576])
+    #     quantizer = torch_quantizer(
+    #         "test", model, (x), output_dir=opt.xmodel, device=opt.device
+    #     )
+    #     model = quantizer.quant_model
     model.eval()
 
     timer = Timer()
     results = []
     frame_id = 0
     for path, img, img0 in dataloader:
-        # if frame_id % 20 == 0:
-        #     logger.info(
-        #         "Processing frame {} ({:.2f} fps)".format(
-        #             frame_id, 1.0 / max(1e-5, timer.average_time)
-        #         )
-        #     )
-        # run detecting
+        if frame_id % 20 == 0:
+            print("Processing frame {}".format(frame_id))
         timer.tic()
         blob = torch.from_numpy(img).cuda().unsqueeze(0)
         width = img0.shape[1]

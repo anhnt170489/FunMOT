@@ -57,8 +57,8 @@ class LoadImagesCalib:  # for inference
         assert img0 is not None, "Failed to load " + img_path
 
         # Padded resize
-        # img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
-        img = cv2.resize(img0, (self.width, self.height))
+        img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
+        # img = cv2.resize(img0, (self.width, self.height))
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)
@@ -78,8 +78,8 @@ class LoadImagesCalib:  # for inference
         # img = cv2.resize(img0, (self.width, self.height))
 
         # Padded resize
-        img = cv2.resize(img0, (self.width, self.height))
-        # img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
+        # img = cv2.resize(img0, (self.width, self.height))
+        img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
         # print(self.height, self.width)
 
         # Normalize RGB
@@ -245,7 +245,7 @@ class LoadVideo:  # for inference
 
         # Padded resize
         img = cv2.resize(img0, (self.width, self.height))
-        # img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
+        img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
 
         # Normalize RGB
         img = img[:, :, ::-1].transpose(2, 0, 1)

@@ -316,6 +316,12 @@ class opts(object):
         )
         ##################################################################
         self.parser.add_argument(
+            "--quantize-inputsize",
+            type=int,
+            nargs="+",
+            help="[Quantization] Input size (WxH)",
+        )
+        self.parser.add_argument(
             "--calib_datapath", type=str, help="[Quantization] Path to calib data"
         )
         self.parser.add_argument(

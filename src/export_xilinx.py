@@ -34,14 +34,14 @@ def evaluate(model, val_loader, cpu=False, is_deploy=False):
         for i, (path, img) in tqdm(enumerate(val_loader)):
             if is_deploy and i > 5:
                 break
-            if is_deploy:
-                if not cpu:
-                    blob = torch.from_numpy(img).cuda().unsqueeze(0)
-                else:
-                    blob = torch.from_numpy(img).unsqueeze(0)
-            else:
-                if not cpu:
-                    blob = img.cuda()
+            # if is_deploy:
+            #     if not cpu:
+            #         blob = torch.from_numpy(img).cuda().unsqueeze(0)
+            #     else:
+            #         blob = torch.from_numpy(img).unsqueeze(0)
+            # else:
+            if not cpu:
+                blob = img.cuda()
             out = model(blob)
     del out
     torch.cuda.empty_cache()
@@ -88,7 +88,11 @@ def quantization(opt, title="optimize", model_name="", file_path=""):
     model = load_model(model, opt.load_model)
     model = model.to(device)
 
-    input = torch.randn([batch_size, 3, 320, 576])
+    input = torch.randn(
+        [batch_size, 3, opt.quantize_inputsize[1], opt.quantize_inputsize[0]]
+    )
+
+    print(f"Input shape: {input.shape}")
     if quant_mode == "float":
         quant_model = model
     else:
@@ -108,15 +112,22 @@ def quantization(opt, title="optimize", model_name="", file_path=""):
         with open(opt.calib_datapath, "r") as f:
             lines = f.readlines()
         data_base_path = "/home/ubuntu/workspace/trungdt21/data_calib_fairmot"
-        print(f"Calib using {opt.list_images}; img_size: {opt.img_size}")
+        print(f"Calib using {opt.calib_datapath}; img_size: {opt.quantize_inputsize}")
         lines = list(map(lambda x: os.path.join(data_base_path, x.rstrip()), lines))
         ######################### Using load_data
         val_loader = load_data(
             subset_len=subset_len,
             batch_size=batch_size,
             lines=lines,
-            img_size=opt.img_size,
+            img_size=opt.quantize_inputsize,
         )
+        if finetune and quant_mode == "calib":
+            ft_loader = load_data(
+                subset_len=1024,
+                batch_size=batch_size,
+                lines=lines,
+                img_size=opt.quantize_inputsize,
+            )
 
         ######################### Using LoadImagesCalib
 
@@ -130,16 +141,12 @@ def quantization(opt, title="optimize", model_name="", file_path=""):
         # )
     elif ext == "mp4":
         ############################# Using Load Video
-        val_loader = datasets.LoadVideoCalib(opt.calib_datapath, (576, 320))
+        val_loader = datasets.LoadVideoCalib(opt.calib_datapath, opt.quantize_inputsize)
 
-    if finetune == True:
+    if finetune is True:
         if quant_mode == "calib":
-            ft_loader = load_data(
-                subset_len=1024,
-                batch_size=batch_size,
-                lines=lines,
-                img_size=opt.img_size,
-            )
+            if ft_loader is None:
+                raise Exception("ft_loader is none.")
             quantizer.fast_finetune(evaluate, (quant_model, ft_loader))
         elif quant_mode == "test":
             quantizer.load_ft_param()
@@ -154,7 +161,7 @@ def quantization(opt, title="optimize", model_name="", file_path=""):
     if deploy:
         print("DEPLOYING")
         # quant_model.eval()
-        quantizer.export_xmodel(deploy_check=True)
+        quantizer.export_xmodel(deploy_check=False)
 
 
 if __name__ == "__main__":
