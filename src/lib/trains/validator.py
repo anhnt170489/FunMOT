@@ -25,7 +25,7 @@ from pycocotools.cocoeval import COCOeval
 from tracking_utils.coco_eval_smartcity import COCOeval2
 
 SKIP_FRAME = 0
-DEBUG = False
+DEBUG = True
 
 
 def handle_hs_file(gt_hs_path):
@@ -130,7 +130,7 @@ class Validator:
         head_area_bbox_tlwh = [c_x - h / 4, tl_y, h / 2, h / 2]
         return head_area_bbox_tlbr, head_area_bbox_tlwh
 
-    def eval_seq(self, seq, dataloader, data_type, result_filename, gt=None, save_dir=None, show_image=True,
+    def eval_seq(self, seq, dataloader, data_type, result_filename, gt=None, gt_hs=None, save_dir=None, show_image=True,
                  frame_rate=30):
         if save_dir:
             mkdir_if_missing(save_dir)
@@ -156,12 +156,8 @@ class Validator:
                 start_frame = 0
                 frame_id = 0
         images = []
-
         if gt is not None:
-            if DEBUG:
-                images, gt, gt_hs = gt
-            else:
-                images, gt = gt
+            images, gt = gt
             img_name_2_ids = {}
             for image in images:
                 img_name_2_ids[image['file_name']] = image['id']
@@ -185,10 +181,10 @@ class Validator:
                 img_id = img_name_2_ids[img_name]
                 frame_id = img_id
             # This code is for debugging
+            gt_hs_tlhws = []
+            gt_ids = []
             if DEBUG:
                 if gt_hs is not None:
-                    gt_hs_tlhws = []
-                    gt_ids = []
                     tmp_gt = gt_hs[img_id]
                     for track_id, tlwh in tmp_gt:
                         gt_ids.append(track_id)
@@ -233,18 +229,27 @@ class Validator:
             # results.append((frame_id + 1, online_head_tlwhs, online_ids))
             # results.append((frame_id + 1, online_tlwhs, online_ids, online_scores))
             if show_image or save_dir is not None:
+                # TODO get bbox of frames
                 online_im = vis.plot_tracking(img0, online_tlwhs, online_ids, frame_id=frame_id,
                                               fps=1. / timer.average_time)
                 # online_im = vis.plot_tracking(img0, online_head_tlwhs, online_ids, frame_id=frame_id,
                 #                               fps=1. / timer.average_time)
-                # online_im = vis.plot_tracking(img0, gt_hs_tlhws, gt_ids, frame_id=frame_id,
-                #                               fps=1. / timer.average_time)
+                online_im_gt = vis.plot_tracking(img0, gt_hs_tlhws, gt_ids, frame_id=frame_id,
+                                              fps=1. / timer.average_time)
 
             if show_image:
                 cv2.imshow('online_im', online_im)
             if save_dir is not None:
+                if  DEBUG:
+                    if not os.path.exists(os.path.join(save_dir, 'gt')):
+                        os.makedirs(os.path.join(save_dir, 'gt'))
+                    cv2.imwrite(os.path.join(
+                        save_dir, 'gt', '{:05d}.jpg'.format(frame_id)), online_im_gt)
+                if not os.path.exists(os.path.join(save_dir, 'predict')):
+                        os.makedirs(os.path.join(save_dir, 'predict'))
                 cv2.imwrite(os.path.join(
-                    save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
+                    save_dir, 'predict', '{:05d}.jpg'.format(frame_id)), online_im)
+
             if gt is None:
                 frame_id += SKIP_FRAME + 1
         # save results
@@ -289,15 +294,18 @@ class Validator:
 
                 # Reading gt
             gt = None
+            gt_hs = None
+            if DEBUG:
+                gt_hs_path = os.path.join(
+                    self.data_root, seq, 'gt_hs', 'gt.txt')
+                gt_hs = handle_hs_file(gt_hs_path)
+
             if self.det_only and not self.pred_only:
                 gt_path = osp.join(self.data_root, seq, 'gt_coco', 'gt.json')
+                # print(gt_path)
                 # gt_path = osp.join(self.data_root, seq, 'annotations', 'instances_default.json')
                 # gt_path = osp.join(self.data_root, seq, 'gt_pseudo', 'gt.json')
                 # This for debug
-                if DEBUG:
-                    gt_hs_path = os.path.join(
-                        self.data_root, seq, 'gt_hs', 'gt.txt')
-                    gt_hs = handle_hs_file(gt_hs_path)
 
                 gt_json = json.load(open(gt_path))
                 gt = {}
@@ -310,13 +318,10 @@ class Validator:
                         gt[img_id].append((track_id, tlwh))
                     else:
                         gt[img_id] = [(track_id, tlwh)]
-                if DEBUG:
-                    gt = (gt_json['images'], gt, gt_hs)
-                else:
                     gt = (gt_json['images'], gt)
 
             # eval
-            nf, ta, tc = self.eval_seq(seq, dataloader, data_type, result_filename, gt=gt,
+            nf, ta, tc = self.eval_seq(seq, dataloader, data_type, result_filename, gt=gt, gt_hs=gt_hs,
                                        save_dir=output_dir, show_image=show_image, frame_rate=frame_rate)
             n_frame += nf
             timer_avgs.append(ta)

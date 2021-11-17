@@ -45,19 +45,19 @@ def main(opt):
     validator_ids = Validator(opt, model=model, det_only=False)
 
     print('Starting evaluating...')
-    det_mAP = validator_det.evaluate(
-        exp_name=opt.exp_id + '_val',
-        epoch=start_epoch,
-        show_image=False,
-        save_images=False,
-        save_videos=False,
-        logger_main=logger
-    )
+    # det_mAP = validator_det.evaluate(
+    #     exp_name=opt.exp_id + '_val',
+    #     epoch=start_epoch,
+    #     show_image=False,
+    #     save_images=True,
+    #     save_videos=False,
+    #     logger_main=logger
+    # )
     ids_mota = validator_ids.evaluate(
         exp_name=opt.exp_id + '_val',
         epoch=start_epoch,
         show_image=False,
-        save_images=False,
+        save_images=True,
         save_videos=False,
         logger_main=logger
     )
@@ -76,8 +76,8 @@ if __name__ == '__main__':
             # '--img_size=(576,320)',
             # '--img_size=(480,256)',
             '--img_size=(384,224)',
-            '--data_cfg=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/src/lib/cfg/LT.json',
-            '--load_model=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/models/silver_1/model_best.pth',
+            '--data_cfg=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/src/lib/cfg/LiveTrack.json',
+            '--load_model=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/models/deploy_model/silver_1.2/model_42.pth',
             '--log_model_dir=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/exp/lab/model_1310_384']
     opt = opts().init(args)
     main(opt)
