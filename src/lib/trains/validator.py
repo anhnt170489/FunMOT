@@ -30,15 +30,27 @@ DEBUG = True
 
 def handle_hs_file(gt_hs_path):
     gt_hs = {}
+    set_track = set()
+    map_track = {}
+    with open(gt_hs_path) as file:
+        for line in file:
+            line = line.rstrip().split(',')
+            image_id, track_id, t, l, w, h, _, _, _ = line
+            set_track.add(int(track_id))
+    for i, track_id in enumerate(set_track):
+        map_track[str(track_id)] = str(i + 1)
+
+
     with open(gt_hs_path) as file:
         for line in file:
             line = line.rstrip().split(',')
             image_id, track_id, t, l, w, h, _, _, _ = line
             tlwh = [int(t), int(l), int(w), int(h)]
             if int(image_id) in gt_hs:
-                gt_hs[int(image_id)].append((track_id, tlwh))
+                gt_hs[int(image_id)].append((map_track[track_id], tlwh))
             else:
-                gt_hs[int(image_id)] = [(track_id, tlwh)]
+                gt_hs[int(image_id)] = [(map_track[track_id], tlwh)]
+
     return gt_hs
 
 def save_labels(save_label_dir, tlwhs, ids, label_name):
