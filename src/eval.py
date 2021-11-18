@@ -65,8 +65,8 @@ def main(opt):
     print("Finished evaluate.")
     # score = det_mAP + ids_mota
     logger.write('\n')
-    logger.write('Final result: {} | mAP: {} | MOTA: {}'.format(
-        start_epoch, det_mAP, ids_mota))
+    # logger.write('Final result: {} | mAP: {} | MOTA: {}'.format(
+    #     start_epoch, det_mAP, ids_mota))
 
 
 if __name__ == '__main__':

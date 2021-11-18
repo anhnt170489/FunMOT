@@ -41,6 +41,23 @@ def handle_hs_file(gt_hs_path):
                 gt_hs[int(image_id)] = [(track_id, tlwh)]
     return gt_hs
 
+def save_labels(save_label_dir, tlwhs, ids, label_name):
+    lines = []
+    for tlwh, id_ in zip(tlwhs, ids):
+        t, l, w, h = tlwh
+        # [     1218.6     -21.185      105.42      104.18] 1
+        line = [id_, t, l, w, h]
+        line = [str(int(i)) for i in line]
+        line = ','.join(line) + '\n'
+        lines.append(line)
+    # lines = ['Readme', 'How to write text files in Python']
+    with open(os.path.join(save_label_dir, label_name), 'w') as f:
+        for line in lines:
+            f.write(line)
+
+def create_dir(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 class Validator:
     def __init__(self, opt, model=None, det_only=False, pred_only=False, fps=30):
@@ -161,7 +178,8 @@ class Validator:
             img_name_2_ids = {}
             for image in images:
                 img_name_2_ids[image['file_name']] = image['id']
-
+        current_gt_track = set()
+        current_pred_track = set()
         for i, (path, img, img0) in enumerate(dataloader):
             if i < start_frame:
                 continue
@@ -229,26 +247,64 @@ class Validator:
             # results.append((frame_id + 1, online_head_tlwhs, online_ids))
             # results.append((frame_id + 1, online_tlwhs, online_ids, online_scores))
             if show_image or save_dir is not None:
+                image_path = path
                 # TODO get bbox of frames
-                online_im = vis.plot_tracking(img0, online_tlwhs, online_ids, frame_id=frame_id,
+                online_im, bboxes_im = vis.plot_tracking(img0, online_tlwhs, online_ids, frame_id=frame_id,
                                               fps=1. / timer.average_time)
                 # online_im = vis.plot_tracking(img0, online_head_tlwhs, online_ids, frame_id=frame_id,
                 #                               fps=1. / timer.average_time)
-                online_im_gt = vis.plot_tracking(img0, gt_hs_tlhws, gt_ids, frame_id=frame_id,
+                online_im_gt, bboxes_gt_im = vis.plot_tracking(img0, gt_hs_tlhws, gt_ids, frame_id=frame_id,
                                               fps=1. / timer.average_time)
+            label_name = path.split('/')[-1].replace('jpg', 'txt')
 
+            # TODO: save predict labels labels_with_ids
             if show_image:
                 cv2.imshow('online_im', online_im)
+            save_gt_image = os.path.join(save_dir, 'gt', 'images')
+            save_gt_bboxes = os.path.join(save_dir, 'gt', 'bboxes')
+            save_gt_set_bboxes = os.path.join(save_dir, 'gt', 'set_bboxes')
+            save_gt_label_dir = os.path.join(save_dir, 'gt', 'labels')
+            save_predicted_image = os.path.join(save_dir, 'predict', 'images')
+            save_predicted_bboxes = os.path.join(save_dir, 'predict', 'bboxes')
+            save_predicted_set_bboxes = os.path.join(save_dir, 'predict', 'set_bboxes')
+            save_predicted_label_dir = os.path.join(save_dir, 'predict', 'labels')
+            create_dir(save_gt_image)
+            create_dir(save_gt_label_dir)
+            create_dir(save_gt_bboxes)
+            create_dir(save_gt_set_bboxes)
+            create_dir(save_predicted_image)
+            create_dir(save_predicted_label_dir)
+            create_dir(save_predicted_bboxes)
+            create_dir(save_predicted_set_bboxes)
             if save_dir is not None:
-                if  DEBUG:
-                    if not os.path.exists(os.path.join(save_dir, 'gt')):
-                        os.makedirs(os.path.join(save_dir, 'gt'))
-                    cv2.imwrite(os.path.join(
-                        save_dir, 'gt', '{:05d}.jpg'.format(frame_id)), online_im_gt)
-                if not os.path.exists(os.path.join(save_dir, 'predict')):
-                        os.makedirs(os.path.join(save_dir, 'predict'))
+                # # Save gt
+                # print(save_gt_image)
+                # print(save_predicted_image)
+                # raise 1==2
                 cv2.imwrite(os.path.join(
-                    save_dir, 'predict', '{:05d}.jpg'.format(frame_id)), online_im)
+                    save_gt_image, '{:05d}.jpg'.format(frame_id)), online_im_gt)
+                for track_id, bbox in bboxes_gt_im:
+                    create_dir(os.path.join(save_gt_bboxes, img_name))
+                    cv2.imwrite(os.path.join(save_gt_bboxes, img_name , '{}.jpg'.format(track_id)), bbox)
+                for track_id, bbox in bboxes_gt_im:
+                    if track_id not in current_gt_track:
+                        current_gt_track.add(track_id)
+                        print(current_gt_track)
+                        # create_dir(os.path.join(save_gt_set_bboxes, img_name))
+                        cv2.imwrite(os.path.join(save_gt_set_bboxes, '{}.jpg'.format(track_id)), bbox)
+                save_labels(save_gt_label_dir, gt_hs_tlhws, gt_ids, label_name)
+                # Save predict
+                cv2.imwrite(os.path.join(
+                    save_predicted_image, '{:05d}.jpg'.format(frame_id)), online_im)
+                for track_id, bbox in bboxes_im:
+                    create_dir(os.path.join(save_predicted_bboxes, img_name))
+                    cv2.imwrite(os.path.join(save_predicted_bboxes, img_name , '{}.jpg'.format(track_id)), bbox)
+                for track_id, bbox in bboxes_im:
+                    if track_id not in current_pred_track:
+                        current_pred_track.add(track_id)
+                        # create_dir(os.path.join(save_predicted_set_bboxes, img_name))
+                        cv2.imwrite(os.path.join(save_predicted_set_bboxes, '{}.jpg'.format(track_id)), bbox)
+                save_labels(save_predicted_label_dir, online_tlwhs, online_ids, label_name)
 
             if gt is None:
                 frame_id += SKIP_FRAME + 1
