@@ -37,9 +37,8 @@ def handle_hs_file(gt_hs_path):
             line = line.rstrip().split(',')
             image_id, track_id, t, l, w, h, _, _, _ = line
             set_track.add(int(track_id))
-    for i, track_id in enumerate(set_track):
+    for i, track_id in enumerate(sorted(set_track)):
         map_track[str(track_id)] = str(i + 1)
-
 
     with open(gt_hs_path) as file:
         for line in file:
