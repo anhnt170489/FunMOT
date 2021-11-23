@@ -77,7 +77,7 @@ if __name__ == '__main__':
             # '--img_size=(480,256)',
             # '--img_size=(384,224)',
             '--data_cfg=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/src/lib/cfg/LiveTrack.json',
-            '--load_model=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/models/deploy_model/silver1.3/model_best.pth',
+            '--load_model=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/models/deploy_model/silver_1.2/model_42.pth',
             '--log_model_dir=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/exp/lab/model_1310_384']
     opt = opts().init(args)
     main(opt)

@@ -1,0 +1,59 @@
+# Notes silver1.2 vs silver1.3 (Tracking only)
+
+
+## set-3
+silver1.2: 1 IDSW, 0 LINK
+silver1.3: 2 IDSW, 0 LINK
+-> silver1.2 bị IDSW khi object rõ ràng.
+-> silver1.3 bị IDSW khi object ko rõ hoăc back of head.
+
+## set-7
+silver1.2: None
+silver1.3: None
+-> silver1.2 None
+-> silver1.3 None
+
+## set-8
+silver1.2: None
+silver1.3: 1 IDSW
+-> silver1.2 NOne
+-> silver1.3 bị IDSW khi object bị occluded.
+
+## set-12
+silver1.2: 6 IDSW, 4 LINK
+silver1.3: 4 IDSW, 4 LINK
+-> silver1.2
+ - bị IDSW khi object ở xa (ngoài cửa) và back of head.
+ - bị LINK với objects back of head.
+-> silver1.3
+ - cũng bị giống silver1.2. Tuy nhiên bị ở nhiều objects khác nhau.
+ - bị LINK với objects back of head.
+
+## set-13
+silver1.2: 7 IDSW, 2 LINK
+silver1.3: 7 IDSW, 1 LINK
+-> silver1.2
+  - bị IDSW ở những objects nhỏ, không rõ.
+  - bị LINK ở object nhỏ.
+-> silver1.3
+  - giống vs silver1.2, tuy nhiên bị lỗi một object khá rõ.
+  - không bị LINK ở objects nhỏ nhưng bị lỗi ở 1 object khá rõ.
+## set-16
+silver1.2: 1 IDSW, 3 LINK
+silver1.3: None
+-> silver1.2
+ - bị IDSW ở not-frontal-face object (1 object).
+ - bị LINK ở đúng object sai IDSW.
+-> silver1.3
+
+## set-18
+silver1.2: 1 IDSW
+silver1.3: 1 IDSW
+-> silver1.2 khá rõ nhưng vẫn bị IDSW
+-> silver1.3 bị lỗi giống silver1.2
+
+=> Conclusion:
+- silver1.3 có 3 set tốt hơn, silver1.2 có 2 set tốt hơn.
+- silver1.3 có một vài case object khá rõ nhưng lỗi.
+- silver1.2 và 1.3 đều lỗi ở các case back of head, occluded.
+- silver1.2 có xu hướng lỗi ở một số object cụ thể (lỗi lặp lại ở các object đó)!

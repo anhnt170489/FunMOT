@@ -56,9 +56,7 @@ def plot_tracking(image, tlwhs, obj_ids, scores=None, frame_id=0, fps=0., ids2=N
     for i, tlwh in enumerate(tlwhs):
         x1, y1, w, h = tlwh
         intbox = tuple(map(int, (x1, y1, x1 + w, y1 + h)))
-        # obj_id = int(obj_ids[i])
         obj_id = int(obj_ids[i].split('_')[-1])
-        # id_text = '{}'.format(int(obj_id))
         id_text = obj_ids[i].split('_')[0]
         if ids2 is not None:
             id_text = id_text + ', {}'.format(int(ids2[i]))
@@ -182,15 +180,6 @@ def process_one_set(images_path, eval_path, output_path):
             gt_tlwh = gt_bboxes[m_gt]['tlwh']
             pred_track = pred_track_ids[m_pred]
             pred_tlwh = pred_bboxes[m_pred]['tlwh']
-            # if pred_track not in map_pred_gt_track:
-            #     if i != 0:
-            #         err_new_track.append((image, pred_track))
-            #     map_pred_gt_track[pred_track] = {gt_track}
-            # else:
-            #     if i != 0:
-            #         if gt_track not in map_pred_gt_track[pred_track]:
-            #             err_wrong_link.append((image, pred_track))
-            #     map_pred_gt_track[pred_track].add(gt_track)
             if gt_track not in map_pred_gt_track:
                 if pred_track in existed_pred_tracks:  # incorrect linking
                     inlink_ids.append(str(gt_track) + "-new_" + str(gt_track))
@@ -265,5 +254,5 @@ def main(images_path, eval_path, output_path):
 if __name__ == "__main__":
     images_path = "/home/namtd/workspace/projects/smartcity/src/multiple-tracking/dataset/eval/LiveTrack/images/val/"
     eval_path = "/home/namtd/workspace/projects/smartcity/src/multiple-tracking/dataset/eval/LiveTrack/images/outputs/default_val/"
-    output_path = "eval_result"
+    output_path = "/home/namtd/Desktop/lab/eval_track/eval_results/eval_silver1.2_576_320"
     main(images_path, eval_path, output_path)
