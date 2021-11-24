@@ -147,16 +147,15 @@ class Validator:
                 start_frame = int(len_all / 2)
                 end_frame = len_all - 1
                 frame_id = int(len_all / 2)
+            elif self.opt.val_half:
+                start_frame = 0
+                end_frame = int(len_all / 2) + 1
+                frame_id = 0
             else:
                 start_frame = 0
-                end_frame = len_all
-                frame_id = 0
-            if 'Pub_P_33' in seq or 'Pub_P_25' in seq or 'Pub_P_15' in seq or 'Pub_P_27' in seq or 'Pub_P_38' in seq \
-                    or 'Pub_P_16' in seq or 'Pub_P_22' in seq or 'Pub_P_20' in seq or 'Pub_P_24' in seq or 'Pub_P_18' in seq:
-                start_frame = 0
+                end_frame = len_all - 1
                 frame_id = 0
         images = []
-
         if gt is not None:
             if DEBUG:
                 images, gt, gt_hs = gt

@@ -73,11 +73,11 @@ if __name__ == '__main__':
     args = ['mot',
             '--arch=resfpndcn_18',
             '--conf_thres=0.4',
-            # '--img_size=(576,320)',
+            '--img_size=(576,320)',
             # '--img_size=(480,256)',
-            '--img_size=(384,224)',
-            '--data_cfg=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/src/lib/cfg/LT.json',
-            '--load_model=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/models/silver_1/model_best.pth',
-            '--log_model_dir=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/exp/lab/model_1310_384']
+            # '--img_size=(384,224)',
+            '--data_cfg=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/src/lib/cfg/LiveTrack_eval_train.json',
+            '--load_model=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/models/deploy_model/silver_1.2/model_42.pth',
+            '--log_model_dir=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/exp/lab/model_silver1.2_576_train']
     opt = opts().init(args)
     main(opt)
