@@ -22,6 +22,7 @@ def main(opt):
     torch.backends.cudnn.benchmark = not opt.not_cuda_benchmark and not opt.test
 
     print('Setting up head of model ...')
+    print(opt.task)
     opt = opts().update_res_and_set_heads(opt)
     print(opt)
 
@@ -71,13 +72,14 @@ def main(opt):
 
 if __name__ == '__main__':
     args = ['mot',
-            '--arch=resfpndcn_18',
+            # '--arch=resfpndcn_18',
+            '--arch=dla_34',
             '--conf_thres=0.4',
             '--img_size=(576,320)',
             # '--img_size=(480,256)',
             # '--img_size=(384,224)',
             '--data_cfg=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/src/lib/cfg/LiveTrack_eval_train.json',
-            '--load_model=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/models/deploy_model/silver_1.2/model_42.pth',
-            '--log_model_dir=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/exp/lab/model_silver1.2_576_train']
+            '--load_model=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/models/FM_pretrained/fairmot_dla34.pth',
+            '--log_model_dir=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/exp/lab/dla_pretrained']
     opt = opts().init(args)
     main(opt)

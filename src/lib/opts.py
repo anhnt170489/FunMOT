@@ -250,7 +250,7 @@ class opts(object):
             if opt.reg_offset:
                 opt.heads.update({'reg': 2})
             # opt.nID = dataset.nID
-            if opt.arch == 'resfpndcn_18':
+            if opt.arch == 'resfpndcn_18' or opt.arch == 'dla_34':
                 img_size = str(opt.img_size)[1:-1].split(',')
                 img_width = int(img_size[0])
                 img_height = int(img_size[1])
@@ -288,7 +288,7 @@ class opts(object):
             if opt.reg_offset:
                 opt.heads.update({'reg': 2})
             # opt.nID = dataset.nID
-            if opt.arch == 'resfpndcn_18':
+            if opt.arch == 'resfpndcn_18' or opt.arch == 'dla_34':
                 opt.img_size = opt.img_size
                 # opt.img_size = (480, 256)
                 # opt.img_size = (384, 244)
