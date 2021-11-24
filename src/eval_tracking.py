@@ -245,14 +245,15 @@ def process_one_set(images_path, eval_path, output_path):
     print("Number of false positive bboxes", total_fp)
 
 def main(images_path, eval_path, output_path):
-    eval_sets = ['set-3', 'set-7', 'set-8', 'set-12', 'set-13', 'set-16', 'set-18']
+    # eval_sets = ['set-3', 'set-7', 'set-8', 'set-12', 'set-13', 'set-16', 'set-18']
+    eval_sets = ['set-0', 'set-1', 'set-2', 'set-4', 'set-5', 'set-6', 'set-9', 'set-10', 'set-11', 'set-14', 'set-15', 'set-17', 'set-19', 'set-20', 'set-21']
     for eval_set in eval_sets:
         images_set = os.path.join(images_path, eval_set, 'img1')
         eval_set = os.path.join(eval_path, eval_set)
         process_one_set(images_set, eval_set, output_path)
 
 if __name__ == "__main__":
-    images_path = "/home/namtd/workspace/projects/smartcity/src/multiple-tracking/dataset/eval/LiveTrack/images/val/"
-    eval_path = "/home/namtd/workspace/projects/smartcity/src/multiple-tracking/dataset/eval/LiveTrack/images/outputs/default_val/"
-    output_path = "/home/namtd/Desktop/lab/eval_track/eval_results/eval_silver1.2_576_320"
+    images_path = "/home/namtd/workspace/projects/smartcity/src/multiple-tracking/dataset/eval/LiveTrack_train/images/train/"
+    eval_path = "/home/namtd/workspace/projects/smartcity/src/multiple-tracking/dataset/eval/LiveTrack_train/images/outputs/default_val/"
+    output_path = "/home/namtd/Desktop/lab/eval_track/eval_results/eval_train_silver1.2"
     main(images_path, eval_path, output_path)
