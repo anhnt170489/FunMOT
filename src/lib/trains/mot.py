@@ -27,7 +27,7 @@ class MotLoss(torch.nn.Module):
             RegLoss() if opt.reg_loss == 'sl1' else None
         self.crit_wh = torch.nn.L1Loss(reduction='sum') if opt.dense_wh else \
             NormRegL1Loss() if opt.norm_wh else \
-                RegWeightedL1Loss() if opt.cat_spec_wh else self.crit_reg
+            RegWeightedL1Loss() if opt.cat_spec_wh else self.crit_reg
         self.opt = opt
         self.emb_dim = opt.reid_dim
         self.nID = opt.nID
@@ -63,10 +63,12 @@ class MotLoss(torch.nn.Module):
             if opt.id_weight > 0:
                 id_head = _tranpose_and_gather_feat(output['id'], batch['ind'])
                 # id_head = id_head[batch['reg_mask'] > 0].contiguous()
-                id_head = id_head[batch['ids_mask'] > 0][batch['reg_mask'][batch['ids_mask'] > 0] > 0].contiguous()
+                id_head = id_head[batch['ids_mask'] > 0][batch['reg_mask']
+                                                         [batch['ids_mask'] > 0] > 0].contiguous()
                 id_head = self.emb_scale * F.normalize(id_head)
                 # id_target = batch['ids'][batch['reg_mask'] > 0]
-                id_target = batch['ids'][batch['ids_mask'] > 0][batch['reg_mask'][batch['ids_mask'] > 0] > 0]
+                id_target = batch['ids'][batch['ids_mask'] >
+                                         0][batch['reg_mask'][batch['ids_mask'] > 0] > 0]
 
                 id_output = self.classifier(id_head).contiguous()
 
@@ -85,12 +87,14 @@ class MotLoss(torch.nn.Module):
             else:
                 id_loss = torch.tensor([0.0], device=opt.device)
 
-        det_loss = opt.hm_weight * hm_loss + opt.wh_weight * wh_loss + opt.off_weight * off_loss
+        det_loss = opt.hm_weight * hm_loss + opt.wh_weight * \
+            wh_loss + opt.off_weight * off_loss
         if opt.multi_loss == 'id_focus':
             print('Focusing on id loss')
             loss = 0.1 * det_loss + 0.9 * id_loss
         elif opt.multi_loss == 'uncertainty':
-            loss = torch.exp(-self.s_det) * det_loss + torch.exp(-self.s_id) * id_loss + (self.s_det + self.s_id)
+            loss = torch.exp(-self.s_det) * det_loss + \
+                torch.exp(-self.s_id) * id_loss + (self.s_det + self.s_id)
             loss *= 0.5
         else:
             loss = det_loss + 0.1 * id_loss

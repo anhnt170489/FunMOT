@@ -68,6 +68,8 @@ class opts(object):
                                  help='input height. -1 for default from dataset.')
         self.parser.add_argument('--input_w', type=int, default=-1,
                                  help='input width. -1 for default from dataset.')
+        self.parser.add_argument('--img_size', default=(576, 320),
+                                 help='input image size')
 
         # train
         self.parser.add_argument('--optimizer', type=str, default='ADAM',
@@ -208,6 +210,44 @@ class opts(object):
             model_path = opt.save_dir[:-4] if opt.save_dir.endswith('TEST') \
                 else opt.save_dir
             opt.load_model = os.path.join(model_path, 'model_last.pth')
+        return opt
+
+    def update_res_and_set_heads(self, opt):
+        # input_h = opt.input_res if opt.input_res > 0 else input_h
+        # input_w = opt.input_res if opt.input_res > 0 else input_w
+        # opt.input_h = opt.input_h if opt.input_h > 0 else 0
+        # opt.input_w = opt.input_w if opt.input_w > 0 else 0
+        # print("input_h, input_w", opt.input_h, opt.input_w)
+        # opt.output_h = opt.input_h // opt.down_ratio
+        # opt.output_w = opt.input_w // opt.down_ratio
+        # print("output_h, output_w", opt.output_h, opt.output_w)
+        # opt.input_res = max(opt.input_h, opt.input_w)
+        # opt.output_res = max(opt.output_h, opt.output_w)
+        # print("input_res, output_res", opt.input_res, opt.output_res)
+        opt.num_classes = 1
+        if opt.task == 'mot':
+            opt.heads = {'hm': opt.num_classes,
+                            'wh': 2 if not opt.ltrb else 4,
+                            'id': opt.reid_dim}
+            if opt.reg_offset:
+                opt.heads.update({'reg': 2})
+            # opt.nID = dataset.nID
+            # if opt.arch == 'resfpndcn_18':
+            img_size = str(opt.img_size)[1:-1].split(',')
+            img_width = int(img_size[0])
+            img_height = int(img_size[1])
+            input_h = opt.input_h
+            input_w = opt.input_w
+            opt.img_size = (input_w, input_h)
+                # opt.img_size = (480, 256)
+                # opt.img_size = (384, 224)
+            # else:
+            #     opt.img_size = (1088, 608)
+                # opt.img_size = (864, 480)
+                # opt.img_size = (576, 320)
+        else:
+            assert 0, 'task not defined!'
+        print('heads', opt.heads)
         return opt
 
     def update_dataset_info_and_set_heads(self, opt, dataset):

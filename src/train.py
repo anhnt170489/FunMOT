@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+import warnings
 
 import _init_paths
 
@@ -24,15 +25,19 @@ import numpy as np
 
 np.seterr(all='ignore')
 
-import warnings
 
 warnings.filterwarnings('ignore')
 
 
 def main(opt):
+    
     torch.manual_seed(opt.seed)
     torch.backends.cudnn.benchmark = not opt.not_cuda_benchmark and not opt.test
-
+    # torch.cuda.is_available()
+    # print(torch.cuda.current_device())
+    # print(torch.cuda.device(0))
+    # print(torch.cuda.device_count())
+    # print(torch.cuda.get_device_name(0))
     print('Setting up data...')
     Dataset = get_dataset(opt.dataset, opt.task)
     f = open(opt.data_cfg)
@@ -42,15 +47,15 @@ def main(opt):
     f.close()
     transforms = T.Compose([T.ToTensor()])
     img_size = (opt.input_w, opt.input_h)
-    dataset = Dataset(opt, dataset_root, trainset_paths, img_size, augment=True, transforms=transforms)
+    dataset = Dataset(opt, dataset_root, trainset_paths,
+                      img_size, augment=True, transforms=transforms)
     opt = opts().update_dataset_info_and_set_heads(opt, dataset)
+    opt = opts().update_res_and_set_heads(opt)
     print(opt)
 
     logger = Logger(opt)
-
     os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
     opt.device = torch.device('cuda' if opt.gpus[0] >= 0 else 'cpu')
-
     print('Creating model...')
     model = create_model(opt.arch, opt.heads, opt.head_conv)
 
@@ -73,25 +78,6 @@ def main(opt):
         drop_last=True
     )
 
-    if opt.val_intervals > 0:
-        validator_det = Validator(opt, model=model, det_only=True)
-        validator_ids = Validator(opt, model=model, det_only=False)
-
-        validator_det.evaluate(
-            exp_name=opt.exp_id + '_val',
-            epoch=0,
-            show_image=False,
-            save_images=False,
-            save_videos=False
-        )
-
-        validator_ids.evaluate(
-            exp_name=opt.exp_id + '_val',
-            epoch=0,
-            show_image=False,
-            save_images=False,
-            save_videos=False
-        )
 
     print('Starting training...')
     Trainer = train_factory[opt.task]
@@ -102,6 +88,27 @@ def main(opt):
         model, optimizer, start_epoch = load_model(
             model, opt.load_model, trainer.optimizer, opt.resume, opt.lr, opt.lr_step, opt.optimizer)
 
+    if opt.val_intervals > 0:
+        validator_det = Validator(opt, model=model, det_only=True)
+        validator_ids = Validator(opt, model=model, det_only=False)
+
+        validator_det.evaluate(
+            exp_name=opt.exp_id + '_val',
+            epoch=0,
+            show_image=False,
+            save_images=False,
+            save_videos=False,
+            logger_main=logger
+        )
+
+        # validator_ids.evaluate(
+        #     exp_name=opt.exp_id + '_val',
+        #     epoch=0,
+        #     show_image=False,
+        #     save_images=False,
+        #     save_videos=False,
+        #     logger_main=logger
+        # )
     best_score = -1
 
     for epoch in range(start_epoch + 1, opt.num_epochs + 1):
@@ -117,26 +124,31 @@ def main(opt):
                 epoch=epoch,
                 show_image=False,
                 save_images=False,
-                save_videos=False
+                save_videos=False,
+                logger_main=logger
             )
 
-            ids_mota = validator_ids.evaluate(
-                exp_name=opt.exp_id + '_val',
-                epoch=epoch,
-                show_image=False,
-                save_images=False,
-                save_videos=False
-            )
-
-            score = det_mAP + ids_mota
+            # ids_mota = validator_ids.evaluate(
+            #     exp_name=opt.exp_id + '_val',
+            #     epoch=epoch,
+            #     show_image=False,
+            #     save_images=False,
+            #     save_videos=False,
+            #     logger_main=logger
+            # )
+            score = det_mAP #+ ids_mota
+            ids_mota = 0
             logger.write('\n')
             if score > best_score:
                 best_score = score
-                save_model(os.path.join(opt.save_dir, 'model_best.pth'), epoch, model, optimizer)
+                save_model(os.path.join(
+                    opt.save_dir, 'model_best.pth'), epoch, model, optimizer)
                 print('New best model at epoch {}'.format(epoch))
-                logger.write('epoch: {} | mAP: {} | MOTA: {} | BEST'.format(epoch, det_mAP, ids_mota))
+                logger.write('epoch: {} | mAP: {} | MOTA: {} | BEST'.format(
+                    epoch, det_mAP, ids_mota))
             else:
-                logger.write('epoch: {} | mAP: {} | MOTA: {}'.format(epoch, det_mAP, ids_mota))
+                logger.write('epoch: {} | mAP: {} | MOTA: {}'.format(
+                    epoch, det_mAP, ids_mota))
             save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(epoch)),
                        epoch, model, optimizer)
         else:
@@ -162,26 +174,33 @@ def main(opt):
             epoch=epoch,
             show_image=False,
             save_images=False,
-            save_videos=False
+            save_videos=False,
+            logger_main=logger
         )
 
-        ids_mota = validator_ids.evaluate(
-            exp_name=opt.exp_id + '_val',
-            epoch=epoch,
-            show_image=False,
-            save_images=False,
-            save_videos=False
-        )
-        score = det_mAP + ids_mota
+        # ids_mota = validator_ids.evaluate(
+        #     exp_name=opt.exp_id + '_val',
+        #     epoch=epoch,
+        #     show_image=False,
+        #     save_images=False,
+        #     save_videos=False,
+        #     logger_main=logger
+        # )
+        score = det_mAP #+ ids_mota
+        ids_mota = 0
         if score > best_score:
-            save_model(os.path.join(opt.save_dir, 'model_best.pth'), epoch, model, optimizer)
+            save_model(os.path.join(opt.save_dir, 'model_best.pth'),
+                       epoch, model, optimizer)
             print('New best model at epoch {}'.format(epoch))
-            logger.write('epoch: {} | mAP: {} | MOTA: {} | BEST'.format(epoch, det_mAP, ids_mota))
+            logger.write('epoch: {} | mAP: {} | MOTA: {} | BEST'.format(
+                epoch, det_mAP, ids_mota))
         else:
-            logger.write('epoch: {} | mAP: {} | MOTA: {}'.format(epoch, det_mAP, ids_mota))
+            logger.write('epoch: {} | mAP: {} | MOTA: {}'.format(
+                epoch, det_mAP, ids_mota))
         save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(epoch)),
                    epoch, model, optimizer)
-        save_model(os.path.join(opt.save_dir, 'model_last.pth'), epoch, model, optimizer)
+        save_model(os.path.join(opt.save_dir, 'model_last.pth'),
+                   epoch, model, optimizer)
     logger.close()
 
 
