@@ -30,9 +30,10 @@ warnings.filterwarnings('ignore')
 
 
 def main(opt):
-    
+
     torch.manual_seed(opt.seed)
     torch.backends.cudnn.benchmark = not opt.not_cuda_benchmark and not opt.test
+    # For bug
     # torch.cuda.is_available()
     # print(torch.cuda.current_device())
     # print(torch.cuda.device(0))
@@ -40,6 +41,7 @@ def main(opt):
     # print(torch.cuda.get_device_name(0))
     print('Setting up data...')
     Dataset = get_dataset(opt.dataset, opt.task)
+    print(opt.dataset, opt.task)
     f = open(opt.data_cfg)
     data_config = json.load(f)
     trainset_paths = data_config['train']
@@ -58,6 +60,7 @@ def main(opt):
     opt.device = torch.device('cuda' if opt.gpus[0] >= 0 else 'cpu')
     print('Creating model...')
     model = create_model(opt.arch, opt.heads, opt.head_conv)
+    print("Finshed create model + load backbone")
 
     if opt.optimizer == 'ADAM':
         optimizer = torch.optim.Adam(model.parameters(), opt.lr)
@@ -78,7 +81,6 @@ def main(opt):
         drop_last=True
     )
 
-
     print('Starting training...')
     Trainer = train_factory[opt.task]
     trainer = Trainer(opt, model, optimizer)
@@ -90,16 +92,16 @@ def main(opt):
 
     if opt.val_intervals > 0:
         validator_det = Validator(opt, model=model, det_only=True)
-        validator_ids = Validator(opt, model=model, det_only=False)
+        # validator_ids = Validator(opt, model=model, det_only=False)
 
-        validator_det.evaluate(
-            exp_name=opt.exp_id + '_val',
-            epoch=0,
-            show_image=False,
-            save_images=False,
-            save_videos=False,
-            logger_main=logger
-        )
+        # validator_det.evaluate(
+        # exp_name=opt.exp_id + '_val',
+        # epoch=0,
+        # show_image=False,
+        # save_images=False,
+        # save_videos=False,
+        # logger_main=logger
+        # )
 
         # validator_ids.evaluate(
         #     exp_name=opt.exp_id + '_val',
@@ -136,7 +138,7 @@ def main(opt):
             #     save_videos=False,
             #     logger_main=logger
             # )
-            score = det_mAP #+ ids_mota
+            score = det_mAP  # + ids_mota
             ids_mota = 0
             logger.write('\n')
             if score > best_score:
@@ -186,7 +188,7 @@ def main(opt):
         #     save_videos=False,
         #     logger_main=logger
         # )
-        score = det_mAP #+ ids_mota
+        score = det_mAP  # + ids_mota
         ids_mota = 0
         if score > best_score:
             save_model(os.path.join(opt.save_dir, 'model_best.pth'),

@@ -106,26 +106,40 @@ class opts(object):
                                  help='keep the original resolution'
                                       ' during validation.')
         # tracking
-        self.parser.add_argument('--test_mot16', default=False, help='test mot16')
-        self.parser.add_argument('--val_mot15', default=False, help='val mot15')
-        self.parser.add_argument('--test_mot15', default=False, help='test mot15')
-        self.parser.add_argument('--val_mot16', default=False, help='val mot16 or mot15')
-        self.parser.add_argument('--test_mot17', default=False, help='test mot17')
+        self.parser.add_argument(
+            '--test_mot16', default=False, help='test mot16')
+        self.parser.add_argument(
+            '--val_mot15', default=False, help='val mot15')
+        self.parser.add_argument(
+            '--test_mot15', default=False, help='test mot15')
+        self.parser.add_argument(
+            '--val_mot16', default=False, help='val mot16 or mot15')
+        self.parser.add_argument(
+            '--test_mot17', default=False, help='test mot17')
         self.parser.add_argument('--val_mot17', default=True, help='val mot17')
-        self.parser.add_argument('--val_mot20', default=False, help='val mot20')
-        self.parser.add_argument('--test_mot20', default=False, help='test mot20')
+        self.parser.add_argument(
+            '--val_mot20', default=False, help='val mot20')
+        self.parser.add_argument(
+            '--test_mot20', default=False, help='test mot20')
         self.parser.add_argument('--val_hie', default=False, help='val hie')
         self.parser.add_argument('--test_hie', default=False, help='test hie')
-        self.parser.add_argument('--conf_thres', type=float, default=0.4, help='confidence thresh for tracking')
-        self.parser.add_argument('--det_thres', type=float, default=0.3, help='confidence thresh for detection')
-        self.parser.add_argument('--nms_thres', type=float, default=0.4, help='iou thresh for nms')
-        self.parser.add_argument('--track_buffer', type=int, default=30, help='tracking buffer')
-        self.parser.add_argument('--min-box-area', type=float, default=100, help='filter out tiny boxes')
+        self.parser.add_argument(
+            '--conf_thres', type=float, default=0.4, help='confidence thresh for tracking')
+        self.parser.add_argument(
+            '--det_thres', type=float, default=0.3, help='confidence thresh for detection')
+        self.parser.add_argument(
+            '--nms_thres', type=float, default=0.4, help='iou thresh for nms')
+        self.parser.add_argument(
+            '--track_buffer', type=int, default=30, help='tracking buffer')
+        self.parser.add_argument(
+            '--min-box-area', type=float, default=100, help='filter out tiny boxes')
         self.parser.add_argument('--input-video', type=str,
                                  default='../videos/MOT16-03.mp4',
                                  help='path to the input video')
-        self.parser.add_argument('--output-format', type=str, default='video', help='video or text')
-        self.parser.add_argument('--output-root', type=str, default='../demos', help='expected output root path')
+        self.parser.add_argument(
+            '--output-format', type=str, default='video', help='video or text')
+        self.parser.add_argument(
+            '--output-root', type=str, default='../demos', help='expected output root path')
 
         # mot
         self.parser.add_argument('--data_cfg', type=str,
@@ -155,7 +169,8 @@ class opts(object):
                                  help='feature dim for reid')
         self.parser.add_argument('--ltrb', default=True,
                                  help='regress left, top, right, bottom of bbox')
-        self.parser.add_argument('--multi_loss', default='uncertainty', help='multi_task loss: uncertainty | fix')
+        self.parser.add_argument(
+            '--multi_loss', default='uncertainty', help='multi_task loss: uncertainty | fix')
 
         self.parser.add_argument('--norm_wh', action='store_true',
                                  help='L1(\hat(y) / y, 1) or L1(\hat(y), y)')
@@ -227,8 +242,8 @@ class opts(object):
         opt.num_classes = 1
         if opt.task == 'mot':
             opt.heads = {'hm': opt.num_classes,
-                            'wh': 2 if not opt.ltrb else 4,
-                            'id': opt.reid_dim}
+                         'wh': 2 if not opt.ltrb else 4,
+                         'id': opt.reid_dim}
             if opt.reg_offset:
                 opt.heads.update({'reg': 2})
             # opt.nID = dataset.nID
@@ -239,12 +254,12 @@ class opts(object):
             input_h = opt.input_h
             input_w = opt.input_w
             opt.img_size = (input_w, input_h)
-                # opt.img_size = (480, 256)
-                # opt.img_size = (384, 224)
+            # opt.img_size = (480, 256)
+            # opt.img_size = (384, 224)
             # else:
             #     opt.img_size = (1088, 608)
-                # opt.img_size = (864, 480)
-                # opt.img_size = (576, 320)
+            # opt.img_size = (864, 480)
+            # opt.img_size = (576, 320)
         else:
             assert 0, 'task not defined!'
         print('heads', opt.heads)
@@ -264,7 +279,7 @@ class opts(object):
         opt.output_w = opt.input_w // opt.down_ratio
         opt.input_res = max(opt.input_h, opt.input_w)
         opt.output_res = max(opt.output_h, opt.output_w)
-
+        print(opt.input_res, opt.output_res)
         if opt.task == 'mot':
             opt.heads = {'hm': opt.num_classes,
                          'wh': 2 if not opt.ltrb else 4,
@@ -272,7 +287,7 @@ class opts(object):
             if opt.reg_offset:
                 opt.heads.update({'reg': 2})
             opt.nID = dataset.nID
-            if opt.arch == 'resfpndcn_18':
+            if opt.arch == 'resfpndcn_18' or opt.arch == 'dla_34':
                 opt.img_size = (576, 320)
             else:
                 opt.img_size = (1088, 608)
@@ -280,7 +295,6 @@ class opts(object):
                 # opt.img_size = (576, 320)
         else:
             assert 0, 'task not defined!'
-        print('heads', opt.heads)
         return opt
 
     def init(self, args=''):

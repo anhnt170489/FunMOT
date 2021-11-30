@@ -7,18 +7,23 @@ import torch
 from progress.bar import Bar
 from models.data_parallel import DataParallel
 from utils.utils import AverageMeter
+from utils.prior_box import PriorBox
+from models.losses import MultiBoxLoss
 
 
 class ModleWithLoss(torch.nn.Module):
-    def __init__(self, model, loss):
+    def __init__(self, model, loss, multibox_loss):
         super(ModleWithLoss, self).__init__()
         self.model = model
         self.loss = loss
+        self.multibox_loss = multibox_loss
 
-    def forward(self, batch):
+    def forward(self, batch, priors):
         outputs = self.model(batch['input'])
         loss, loss_stats = self.loss(outputs, batch)
-        return outputs[-1], loss, loss_stats
+        loss_l = self.multibox_loss(outputs, priors, batch)
+        loss_l = 0
+        return outputs[-1], loss, loss_stats, loss_l
 
 
 class BaseTrainer(object):
@@ -27,7 +32,10 @@ class BaseTrainer(object):
         self.opt = opt
         self.optimizer = optimizer
         self.loss_stats, self.loss = self._get_losses(opt)
-        self.model_with_loss = ModleWithLoss(model, self.loss)
+        self.multibox_loss = MultiBoxLoss(
+            1, 0.35, True, 0, False, 7, 0.35, False)
+        self.model_with_loss = ModleWithLoss(
+            model, self.loss, self.multibox_loss)
         self.optimizer.add_param_group({'params': self.loss.parameters()})
 
     def set_device(self, gpus, chunk_sizes, device):
@@ -60,6 +68,12 @@ class BaseTrainer(object):
         num_iters = len(data_loader) if opt.num_iters < 0 else opt.num_iters
         bar = Bar('{}/{}'.format(opt.task, opt.exp_id), max=num_iters)
         end = time.time()
+        # MultiBox loss
+        priorbox = PriorBox(image_size=(opt.output_w, opt.output_h))
+        with torch.no_grad():
+            priors = priorbox.forward()
+            priors = priors.cuda()
+
         for iter_id, batch in enumerate(data_loader):
             if iter_id >= num_iters:
                 break
@@ -67,9 +81,12 @@ class BaseTrainer(object):
 
             for k in batch:
                 if k != 'meta':
-                    batch[k] = batch[k].to(device=opt.device, non_blocking=True)
+                    batch[k] = batch[k].to(
+                        device=opt.device, non_blocking=True)
             try:
-                output, loss, loss_stats = model_with_loss(batch)
+                # raise 1 == 2
+                output, loss, loss_stats, loss_l = model_with_loss(
+                    batch, priors)
                 loss = loss.mean()
                 if phase == 'train':
                     self.optimizer.zero_grad()
@@ -84,10 +101,12 @@ class BaseTrainer(object):
                 for l in avg_loss_stats:
                     avg_loss_stats[l].update(
                         loss_stats[l].mean().item(), batch['input'].size(0))
-                    Bar.suffix = Bar.suffix + '|{} {:.4f} '.format(l, avg_loss_stats[l].avg)
+                    Bar.suffix = Bar.suffix + \
+                        '|{} {:.4f} '.format(l, avg_loss_stats[l].avg)
                 if not opt.hide_data_time:
                     Bar.suffix = Bar.suffix + '|Data {dt.val:.3f}s({dt.avg:.3f}s) ' \
-                                              '|Net {bt.avg:.3f}s'.format(dt=data_time, bt=batch_time)
+                                              '|Net {bt.avg:.3f}s'.format(
+                                                  dt=data_time, bt=batch_time)
                 if opt.print_iter > 0:
                     if iter_id % opt.print_iter == 0:
                         print('{}/{}| {}'.format(opt.task, opt.exp_id, Bar.suffix))
