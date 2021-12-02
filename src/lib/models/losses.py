@@ -350,91 +350,47 @@ class MultiBoxLoss(nn.Module):
             ground_truth (tensor): Ground truth boxes and labels for a batch,
                 shape: [batch_size,num_objs,5] (last idx is the label).
         """
-        predictions = predictions[0]
-        print(priors.size())
-        pred_wh = predictions['wh']
-        reg_mask = targets['reg_mask']
-        ct_ind = targets['ind']
+        # Convert predict to form (batch_size, num_pred, tlbr)
+        pred_wh = predictions[0]['wh']
+        pred_wh = pred_wh.permute(0, 2, 3, 1).contiguous()
+        pred = pred_wh.view(pred_wh.size(0), -1, pred_wh.size(3))
+        # Get gt
         target_wh = targets['wh']
 
-        pred = _tranpose_and_gather_feat(pred_wh, ct_ind)
-        mask = reg_mask.unsqueeze(2).expand_as(pred).float()
-        loss = F.l1_loss(pred * mask, target_wh * mask, size_average=False)
-        loss = loss / (mask.sum() + 1e-4)
-
-        # TODO Update priorbox here
-        loc_data = predictions['wh']
-        print(loc_data.size())
         # loc_data, conf_data, landm_data = predictions
         priors = priors
-        num = loc_data[0].size(0)
         num_priors = (priors.size(0))
+        loc_data = pred[:, :num_priors, :]
+        num = loc_data.size(0)
+
         # match priors (default boxes) and ground truth boxes
         loc_t = torch.Tensor(num, num_priors, 4)
-        # landm_t = torch.Tensor(num, num_priors, 10)
         conf_t = torch.LongTensor(num, num_priors)
         for idx in range(num):
-            truths = targets[idx][:, :4].data
-            labels = targets[idx][:, -1].data
-            # landms = targets[idx][:, 4:14].data
+            truths = target_wh[idx][:, :4].data
+            # TODO: Add ind_ here
+            labels = torch.ones([truths.size(0), 1])
             defaults = priors.data
             landms = 0
             landm_t = 0
-
             match(self.threshold, truths, defaults, self.variance,
                   labels, landms, loc_t, conf_t, landm_t, idx)
         if GPU:
             loc_t = loc_t.cuda()
             conf_t = conf_t.cuda()
-            # landm_t = landm_t.cuda()
 
         zeros = torch.tensor(0).cuda()
-        # landm Loss (Smooth L1)
-        # Shape: [batch,num_priors,10]
-        # pos1 = conf_t > zeros
-        # num_pos_landm = pos1.long().sum(1, keepdim=True)
-        # N1 = max(num_pos_landm.data.sum().float(), 1)
-        # pos_idx1 = pos1.unsqueeze(pos1.dim()).expand_as(landm_data)
-        # landm_p = landm_data[pos_idx1].view(-1, 10)
-        # landm_t = landm_t[pos_idx1].view(-1, 10)
-        # loss_landm = F.smooth_l1_loss(landm_p, landm_t, reduction='sum')
-
         pos = conf_t != zeros
         conf_t[pos] = 1
-
         # Localization Loss (Smooth L1)
-        # Shape: [batch,num_priors,4]
         pos_idx = pos.unsqueeze(pos.dim()).expand_as(loc_data)
+        # pos_idx = pos
         loc_p = loc_data[pos_idx].view(-1, 4)
         loc_t = loc_t[pos_idx].view(-1, 4)
         loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction='sum')
 
-        # Compute max conf across batch for hard negative mining
-        # batch_conf = conf_data.view(-1, self.num_classes)
-        # loss_c = log_sum_exp(batch_conf) - \
-        #     batch_conf.gather(1, conf_t.view(-1, 1))
-
-        # # Hard Negative Mining
-        # loss_c[pos.view(-1, 1)] = 0  # filter out pos boxes for now
-        # loss_c = loss_c.view(num, -1)
-        # _, loss_idx = loss_c.sort(1, descending=True)
-        # _, idx_rank = loss_idx.sort(1)
         num_pos = pos.long().sum(1, keepdim=True)
-        # num_neg = torch.clamp(self.negpos_ratio*num_pos, max=pos.size(1)-1)
-        # neg = idx_rank < num_neg.expand_as(idx_rank)
-
-        # # Confidence Loss Including Positive and Negative Examples
-        # pos_idx = pos.unsqueeze(2).expand_as(conf_data)
-        # neg_idx = neg.unsqueeze(2).expand_as(conf_data)
-        # conf_p = conf_data[(pos_idx+neg_idx).gt(0)].view(-1, self.num_classes)
-        # targets_weighted = conf_t[(pos+neg).gt(0)]
-        # loss_c = F.cross_entropy(conf_p, targets_weighted, reduction='sum')
-
-        # Sum of losses: L(x,c,l,g) = (Lconf(x, c) + αLloc(x,l,g)) / N
         N = max(num_pos.data.sum().float(), 1)
         loss_l /= N
-        # loss_c /= N
-        # loss_landm /= N1
 
-        # return loss_l, loss_c, loss_landm
         return loss_l

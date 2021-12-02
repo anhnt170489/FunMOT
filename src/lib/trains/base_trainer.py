@@ -22,7 +22,6 @@ class ModleWithLoss(torch.nn.Module):
         outputs = self.model(batch['input'])
         loss, loss_stats = self.loss(outputs, batch)
         loss_l = self.multibox_loss(outputs, priors, batch)
-        loss_l = 0
         return outputs[-1], loss, loss_stats, loss_l
 
 
@@ -84,9 +83,9 @@ class BaseTrainer(object):
                     batch[k] = batch[k].to(
                         device=opt.device, non_blocking=True)
             try:
-                # raise 1 == 2
                 output, loss, loss_stats, loss_l = model_with_loss(
                     batch, priors)
+                print(loss_l)
                 loss = loss.mean()
                 if phase == 'train':
                     self.optimizer.zero_grad()
@@ -117,7 +116,7 @@ class BaseTrainer(object):
 
             if opt.test:
                 self.save_result(output, batch, results)
-            del output, loss, loss_stats, batch
+            del output, loss, loss_l, loss_stats, batch
 
         bar.finish()
         ret = {k: v.avg for k, v in avg_loss_stats.items()}

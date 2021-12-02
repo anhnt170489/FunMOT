@@ -207,6 +207,19 @@ def main(opt):
 
 
 if __name__ == '__main__':
+    args = ['mot',
+            '--arch=dla_34',
+            '--exp_id=scratch_dla',
+            '--gpus=0',
+            '--batch_size=2',
+            '--num_epochs=100',
+            '--optimizer=RADAM',
+            '--lr=2e-5',
+            '--data_cfg=/home/ubuntu/workspace/namtd/FunMOT/src/lib/cfg/LiveTrack.json',
+            '--input_h=320',
+            '--input_w=576',
+            '--reid_dim=64',
+            '--val_intervals=1']
     # torch.cuda.set_device(0)
-    opt = opts().parse()
+    opt = opts().init(args)
     main(opt)

@@ -35,3 +35,17 @@ python train.py mot --arch 'dla_34' --load_model '../models/FM_pretrained/fairmo
 
 # Train detection with pretrained fairmot_dla34 no eval
 python train.py mot --arch 'dla_34' --load_model '../models/FM_pretrained/fairmot_dla34.pth' --exp_id pretrain_dla_det_no_eval  --gpus 7 --batch_size 64 --num_epochs 100 --optimizer 'RADAM' --lr 2e-5 --data_cfg '../src/lib/cfg/LiveTrack.json' --input_h 320 --input_w 576 --reid_dim 64 --val_intervals -1 --id_weight 0
+
+# Train detection with pretrained ctdet_coco_dla_2x
+python train.py mot --arch 'dla_34' --load_model '../models/FM_pretrained/fairmot_dla34.pth' --exp_id pretrain_ctdet_coco_dla_2x  --gpus 5 --batch_size 64 --num_epochs 100 --optimizer 'RADAM' --lr 2e-5 --data_cfg '../src/lib/cfg/LiveTrack.json' --input_h 320 --input_w 576 --reid_dim 64 --val_intervals 1 --id_weight 0
+
+# Debug train
+python train.py mot --arch 'dla_34' --load_model '/home/ubuntu/workspace/namtd/FunMOT/exp/mot/pretrain_ctdet_coco_dla_2x/model_14.pth' --exp_id pretrain_ctdet_coco_dla_2x  --gpus 7 --batch_size 64 --num_epochs 100 --optimizer 'RADAM' --lr 2e-5 --data_cfg '../src/lib/cfg/LiveTrack_debug.json' --input_h 320 --input_w 576 --reid_dim 64 --val_intervals 1 --id_weight 0
+
+
+# Train on pretrained ctdet_coco
+python train.py mot --arch 'dla_34' --load_model '../models/FM_pretrained/ctdet_coco_dla_2x.pth' --exp_id ctcoco_pretrained_dla  --gpus 4 --batch_size 64 --num_epochs 100 --optimizer 'RADAM' --lr 2e-5 --data_cfg '../src/lib/cfg/LiveTrack.json' --input_h 320 --input_w 576 --reid_dim 64 --val_intervals 1 --id_weight 0
+# Train from scrarch based on dla_34
+python train.py mot --arch 'dla_34' --exp_id scratch_dla  --gpus 3 --batch_size 64 --num_epochs 100 --optimizer 'RADAM' --lr 2e-5 --data_cfg '../src/lib/cfg/LiveTrack.json' --input_h 320 --input_w 576 --reid_dim 64 --val_intervals 1
+# Train debug new loss
+python train.py mot --arch 'dla_34' --exp_id scratch_dla  --gpus 0 --batch_size 2 --num_epochs 100 --optimizer 'RADAM' --lr 2e-5 --data_cfg '../src/lib/cfg/LiveTrack.json' --input_h 320 --input_w 576 --reid_dim 64 --val_intervals 1

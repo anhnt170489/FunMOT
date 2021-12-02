@@ -197,7 +197,7 @@ class Validator:
             timer.tic()
             blob = torch.from_numpy(img).cuda().unsqueeze(0)
             online_targets, dets = tracker.update(blob, img0)
-            # print([t.track_id for t in online_targets])
+            # print(dets)
             online_tlwhs = []
             online_ids = []
             online_head_areas = []
@@ -229,15 +229,10 @@ class Validator:
                 results.append((img_id, dets))
             else:
                 results.append((frame_id + 1, online_tlwhs, online_ids))
-            # results.append((frame_id + 1, online_head_tlwhs, online_ids))
-            # results.append((frame_id + 1, online_tlwhs, online_ids, online_scores))
+
             if show_image or save_dir is not None:
                 online_im = vis.plot_tracking(img0, online_tlwhs, online_ids, frame_id=frame_id,
                                               fps=1. / timer.average_time)
-                # online_im = vis.plot_tracking(img0, online_head_tlwhs, online_ids, frame_id=frame_id,
-                #                               fps=1. / timer.average_time)
-                # online_im = vis.plot_tracking(img0, gt_hs_tlhws, gt_ids, frame_id=frame_id,
-                #                               fps=1. / timer.average_time)
 
             if show_image:
                 cv2.imshow('online_im', online_im)
@@ -328,6 +323,7 @@ class Validator:
                     # pass
                     cocoGt = COCO(gt_path)
                     preds_path = result_filename.replace('.txt', '.json')
+                    print(preds_path)
                     with open(preds_path, 'r') as js:
                         res_obj = json.load(js)["annotations"]
                     if len(res_obj) > 0:
@@ -337,14 +333,17 @@ class Validator:
                         evaluation.accumulate()
                         mAPs.append(evaluation.summarize())
                     # print(str(i + 1) + "/" + str(len(self.seqs)) + ":", str(sum(mAPs) / len(mAPs)))
-                    logger_main.write('\n')
-                    logger_main.write('val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
-                        i + 1, len(self.seqs), mAP=sum(mAPs) / (len(mAPs))))
-                    logger_main.write('\t')
-                    logger_main.write('val_each_set: [{0}/{1}]|mAP@.5: {mAP:}'.format(
-                        i + 1, len(self.seqs), mAP=evaluation.summarize()))
-                    Bar.suffix = 'val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
-                        i + 1, len(self.seqs), mAP=sum(mAPs) / (len(mAPs)))
+                        logger_main.write('\n')
+                        logger_main.write('val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
+                            i + 1, len(self.seqs), mAP=sum(mAPs) / (len(mAPs))))
+                        logger_main.write('\t')
+                        logger_main.write('val_each_set: [{0}/{1}]|mAP@.5: {mAP:}'.format(
+                            i + 1, len(self.seqs), mAP=evaluation.summarize()))
+                        Bar.suffix = 'val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
+                            i + 1, len(self.seqs), mAP=sum(mAPs) / (len(mAPs)))
+                    else:
+                        Bar.suffix = 'val: [{0}/{1}]|mAP@.5: {mAP:}'.format(
+                            i + 1, len(self.seqs), mAP=sum(mAPs) / (len(mAPs) + 1e-10))
                 else:
                     evaluator = Evaluator(self.data_root, seq, data_type)
                     accs.append(evaluator.eval_file(result_filename))
@@ -397,4 +396,4 @@ class Validator:
                     result_root, 'summary_{}.xlsx'.format(exp_name)), epoch)
                 return mota
             else:
-                return sum(mAPs) / (len(mAPs))
+                return sum(mAPs) / (len(mAPs) + 1e-10)
