@@ -100,10 +100,10 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             tid = t.track_id
 
             # Hard code to refine labels
-            if tid not in [1, 2, 3, 4, 9]:
-                continue
-            if tid == 9:
-                tid = 4
+            # if tid not in [1, 2, 3, 4, 9]:
+            #     continue
+            # if tid == 9:
+            #     tid = 4
 
             vertical = tlwh[2] / tlwh[3] > 1.6
             if tlwh[2] * tlwh[3] > opt.min_box_area and not vertical:

@@ -44,12 +44,13 @@ if __name__ == '__main__':
             # '--arch=resfpndcn_34',
             '--arch=resfpndcn_18',
             '--conf_thres=0.4',
-            '--input-video=../videos/NotMask_Pub_P_10.mp4',
-            '--output-root=../out/videos/test',
+            '--input-video=/home/namtd/Desktop/collect-data/28-12-2021/repeating/repeating2/repeating2_5fps.mp4',
+            '--output-root=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/out/repeating2',
+            '--img_size=(384,224)',
             # '--val_mot17=True',y
             # '--val_mot15=True',
             # '--load_model=../models/mix_half_live_ft_resfpndcn_18_576_320/model_best_2nd.pth']
-            '--load_model=../models/silver_1/model_best.pth']
+            '--load_model=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/models/deploy_model/silver_1.2/model_42.pth']
     # '--load_model=../models/crowdhuman_head_resnet34fpn/model_last.pth']
     opt = opts().init(args)
     demo(opt)

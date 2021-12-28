@@ -102,6 +102,8 @@ class LoadVideo:  # for inference
         self.count = 0
 
         self.w, self.h = 1920, 1080
+        self.width = 384
+        self.height = 224
         print('Lenth of the video: {:d} frames'.format(self.vn))
 
     def get_size(self, vw, vh, dw, dh):
@@ -127,7 +129,7 @@ class LoadVideo:  # for inference
         img0 = cv2.resize(img0, (self.w, self.h))
 
         # Padded resize
-        img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
+        # img, _, _, _ = letterbox(img0, height=self.height, width=self.width)
         img = cv2.resize(img0, (self.width, self.height))
 
         # Normalize RGB

@@ -142,3 +142,4 @@ data/
 .vscode
 exp/
 test/
+out/
