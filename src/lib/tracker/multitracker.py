@@ -174,7 +174,7 @@ class STrack(BaseTrack):
 
 
 class JDETracker(object):
-    def __init__(self, opt, model=None, frame_rate=30):
+    def __init__(self, opt, model=None, frame_rate=90):
         self.opt = opt
         if opt.gpus[0] >= 0:
             opt.device = torch.device('cuda')
@@ -195,6 +195,7 @@ class JDETracker(object):
 
         self.frame_id = 0
         self.det_thresh = opt.conf_thres
+        frame_rate = 90
         self.buffer_size = int(frame_rate / 30.0 * opt.track_buffer)
         self.max_time_lost = self.buffer_size
         self.max_per_image = opt.K
@@ -312,7 +313,7 @@ class JDETracker(object):
         dists = matching.fuse_motion(
             self.kalman_filter, dists, strack_pool, detections)
         matches, u_track, u_detection = matching.linear_assignment(
-            dists, thresh=0.4)
+            dists, thresh=0.8)
 
         for itracked, idet in matches:
             track = strack_pool[itracked]
@@ -331,7 +332,7 @@ class JDETracker(object):
 
         dists = matching.iou_distance(r_tracked_stracks, detections)
         matches, u_track, u_detection = matching.linear_assignment(
-            dists, thresh=0.5)
+            dists, thresh=0.9)
         # dists = matching.embedding_distance(r_tracked_stracks, detections)
         # matches, u_track, u_detection = matching.linear_assignment(dists, thresh=0.2)
 

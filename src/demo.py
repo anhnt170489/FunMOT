@@ -44,8 +44,8 @@ if __name__ == '__main__':
             # '--arch=resfpndcn_34',
             '--arch=resfpndcn_18',
             '--conf_thres=0.4',
-            '--input-video=/home/namtd/Desktop/collect-data/28-12-2021/repeating/repeating2/repeating2_5fps.mp4',
-            '--output-root=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/out/repeating2',
+            '--input-video=/home/namtd/Desktop/lab/test-recall/vlc-record-2021-12-29-15h14m42s-rtsp___192.168.0.105-.mp4',
+            '--output-root=/home/namtd/workspace/projects/smartcity/src/multiple-tracking/FunMOT/out/hehe',
             '--img_size=(384,224)',
             # '--val_mot17=True',y
             # '--val_mot15=True',
